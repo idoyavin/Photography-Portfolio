@@ -1,0 +1,135 @@
+---
+/**
+ * One pinned, full-screen chapter of the homepage scroll story.
+ * The stage pins while the outer section provides scroll distance;
+ * the timeline itself is driven by the script in index.astro.
+ *
+ * Deliberately stripped: no odometer, no NN/NN counter, no counting
+ * totals. A photograph, a place, a year, one line.
+ */
+import type { Gallery } from '../data/galleries';
+import { photoUrl, photoSrcSet } from '../data/galleries';
+import type { ChapterStory } from '../data/story';
+
+interface Props {
+  gallery: Gallery;
+  story: ChapterStory;
+  index: number;
+}
+
+const { gallery, story, index } = Astro.props;
+const cover = gallery.photos.find((p) => p.src === gallery.cover);
+const href = `/work/${gallery.slug}/`;
+---
+
+<section class="chapter" data-chapter aria-labelledby={`chapter-${gallery.slug}`}>
+  <div class="chapter__stage" data-stage>
+    <figure class="chapter__media" data-media>
+      <img
+        src={photoUrl(gallery.slug, gallery.cover!, 1280)}
+        srcset={photoSrcSet(gallery.slug, gallery.cover!)}
+        sizes="100vw"
+        alt=""
+        width={cover?.width}
+        height={cover?.height}
+        loading={index === 0 ? 'eager' : 'lazy'}
+        decoding="async"
+      />
+      <div class="chapter__scrim" aria-hidden="true"></div>
+    </figure>
+
+    <div class="chapter__content shell">
+      <h2 class="chapter__title" id={`chapter-${gallery.slug}`} data-title>
+        {gallery.title}
+      </h2>
+
+      <p class="chapter__meta meta" data-meta>
+        {gallery.year ?? 'Home'}
+      </p>
+
+      <p class="chapter__blurb" data-blurb>{gallery.blurb}</p>
+
+      <a class="chapter__cta btn btn--on-photo" href={href} data-cta>
+        View gallery
+        <span class="visually-hidden"> — {gallery.title}</span>
+      </a>
+    </div>
+  </div>
+</section>
+
+<style>
+  .chapter {
+    position: relative;
+  }
+
+  .chapter__stage {
+    position: relative;
+    height: 100svh;
+    min-height: 32rem;
+    display: flex;
+    align-items: flex-end;
+    overflow: hidden;
+  }
+
+  .chapter__media {
+    position: absolute;
+    inset: 0;
+    margin: 0;
+  }
+
+  .chapter__media img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: 50% 38%;
+  }
+
+  .chapter__scrim {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+      to top,
+      rgba(10, 10, 11, 0.9) 0%,
+      rgba(10, 10, 11, 0.55) 28%,
+      rgba(10, 10, 11, 0.1) 58%,
+      rgba(10, 10, 11, 0.3) 100%
+    );
+  }
+
+  .chapter__content {
+    position: relative;
+    z-index: 1;
+    width: 100%;
+    display: grid;
+    gap: var(--space-2xs);
+    justify-items: flex-start;
+    padding-bottom: clamp(3rem, 9vh, 6rem);
+    /* Everything here sits on a photograph, so both the running ink and
+       the .meta label ink switch to the on-photo pair. */
+    color: var(--on-photo);
+    --meta-ink: var(--on-photo-dim);
+  }
+
+  .chapter__title {
+    font-size: var(--step-5);
+    line-height: 0.9;
+    letter-spacing: -0.045em;
+  }
+
+  /* .w-mask / .w are styled once in global.css */
+
+  .chapter__meta {
+    color: var(--on-photo-dim);
+  }
+
+  .chapter__blurb {
+    max-width: 44ch;
+    margin-top: var(--space-2xs);
+    color: var(--on-photo-dim);
+    font-size: var(--step-1);
+  }
+
+  .chapter__cta {
+    margin-top: var(--space-sm);
+  }
+</style>

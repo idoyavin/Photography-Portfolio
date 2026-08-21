@@ -1,0 +1,14 @@
+# build output
+dist/
+.astro/
+
+# dependencies
+node_modules/
+
+# generated image derivatives — rebuild with `npm run images`
+public/media/
+
+# os / editor
+.DS_Store
+Thumbs.db
+*.log

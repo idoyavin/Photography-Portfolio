@@ -1,0 +1,250 @@
+{
+  "austria": [
+    {
+      "src": "mg-6395",
+      "width": 3539,
+      "height": 4718
+    },
+    {
+      "src": "mg-6398",
+      "width": 3263,
+      "height": 4351
+    },
+    {
+      "src": "mg-6552",
+      "width": 2874,
+      "height": 3832
+    },
+    {
+      "src": "mg-6666",
+      "width": 4160,
+      "height": 6240
+    },
+    {
+      "src": "mg-6698",
+      "width": 4088,
+      "height": 5450
+    },
+    {
+      "src": "mg-6704",
+      "width": 3922,
+      "height": 5229
+    },
+    {
+      "src": "mg-6757",
+      "width": 4160,
+      "height": 6240
+    },
+    {
+      "src": "mg-6769",
+      "width": 4097,
+      "height": 6145
+    },
+    {
+      "src": "mg-6770",
+      "width": 4135,
+      "height": 6203
+    },
+    {
+      "src": "mg-6772",
+      "width": 4160,
+      "height": 5547
+    },
+    {
+      "src": "mg-6927",
+      "width": 4160,
+      "height": 5200
+    },
+    {
+      "src": "mg-6940",
+      "width": 4160,
+      "height": 6240
+    },
+    {
+      "src": "mg-6950",
+      "width": 2760,
+      "height": 4906
+    }
+  ],
+  "israel": [
+    {
+      "src": "mg-7786",
+      "width": 3087,
+      "height": 4631
+    },
+    {
+      "src": "mg-7926",
+      "width": 4160,
+      "height": 6240
+    },
+    {
+      "src": "img-5185",
+      "width": 3007,
+      "height": 4511
+    },
+    {
+      "src": "img-5264",
+      "width": 3935,
+      "height": 5903
+    },
+    {
+      "src": "img-5376",
+      "width": 4160,
+      "height": 6240
+    },
+    {
+      "src": "img-5387",
+      "width": 4160,
+      "height": 6240
+    },
+    {
+      "src": "img-5445",
+      "width": 3112,
+      "height": 4668
+    },
+    {
+      "src": "img-5458",
+      "width": 4160,
+      "height": 6240
+    },
+    {
+      "src": "img-5629",
+      "width": 4160,
+      "height": 6240
+    },
+    {
+      "src": "img-5658",
+      "width": 3430,
+      "height": 5145
+    },
+    {
+      "src": "img-5675",
+      "width": 4160,
+      "height": 5547
+    },
+    {
+      "src": "img-5678",
+      "width": 4160,
+      "height": 6240
+    },
+    {
+      "src": "img-8722",
+      "width": 3887,
+      "height": 4859
+    }
+  ],
+  "italy": [
+    {
+      "src": "img-7587",
+      "width": 3694,
+      "height": 4618
+    },
+    {
+      "src": "img-7595",
+      "width": 2686,
+      "height": 3358
+    },
+    {
+      "src": "img-7628",
+      "width": 4000,
+      "height": 5000
+    },
+    {
+      "src": "img-7651",
+      "width": 3986,
+      "height": 4982
+    },
+    {
+      "src": "img-8016",
+      "width": 3762,
+      "height": 4703
+    },
+    {
+      "src": "img-8019",
+      "width": 4000,
+      "height": 5000
+    },
+    {
+      "src": "img-8076",
+      "width": 4000,
+      "height": 5000
+    },
+    {
+      "src": "img-8097",
+      "width": 3847,
+      "height": 4809
+    },
+    {
+      "src": "img-8100",
+      "width": 3938,
+      "height": 4923
+    },
+    {
+      "src": "img-8137",
+      "width": 3200,
+      "height": 4000
+    }
+  ],
+  "tour-du-mont-blanc": [
+    {
+      "src": "img-5785",
+      "width": 5901,
+      "height": 3319
+    },
+    {
+      "src": "img-5796",
+      "width": 3551,
+      "height": 4439
+    },
+    {
+      "src": "img-5856",
+      "width": 4000,
+      "height": 5000
+    },
+    {
+      "src": "img-5903",
+      "width": 4000,
+      "height": 5000
+    },
+    {
+      "src": "img-5917",
+      "width": 4000,
+      "height": 6000
+    },
+    {
+      "src": "img-5948",
+      "width": 4000,
+      "height": 5000
+    },
+    {
+      "src": "img-5956",
+      "width": 4000,
+      "height": 5000
+    },
+    {
+      "src": "img-5959",
+      "width": 3200,
+      "height": 4000
+    },
+    {
+      "src": "img-5961",
+      "width": 3344,
+      "height": 5944
+    },
+    {
+      "src": "img-5995",
+      "width": 4000,
+      "height": 5000
+    },
+    {
+      "src": "img-6057",
+      "width": 4000,
+      "height": 5000
+    },
+    {
+      "src": "img-6265",
+      "width": 3376,
+      "height": 4220
+    }
+  ]
+}

@@ -1,0 +1,252 @@
+---
+/**
+ * The space between chapters: six frames scattered across a tall field,
+ * each drifting at its own parallax speed, with a statement line reading
+ * through the middle of them.
+ *
+ * The photographs sit bare on the page with a small shadow behind them and
+ * the caption below. No mount, no tilt, no rotation, no hover lift — the
+ * only thing that happens is a fade as each one comes into view. The
+ * figure's transform is left entirely to the parallax tween.
+ */
+import type { Gallery } from '../data/galleries';
+import { photoUrl, photoSrcSet } from '../data/galleries';
+import type { ChapterStory } from '../data/story';
+
+interface Props {
+  gallery: Gallery;
+  story: ChapterStory;
+}
+
+const { gallery, story } = Astro.props;
+
+const frames = story.drift
+  .map((drift) => ({ ...drift, photo: gallery.photos.find((p) => p.src === drift.src) }))
+  .filter((f) => f.photo);
+---
+
+<section class="cluster" data-cluster aria-label={`${gallery.title} — selected frames`}>
+  <div class="cluster__field shell">
+    {
+      frames.map((frame, i) => (
+        <figure
+          class:list={['cluster__card', `cluster__card--${i + 1}`]}
+          data-drift={frame.speed}
+        >
+          <button
+            class="cluster__btn"
+            type="button"
+            data-photo
+            data-full={photoUrl(gallery.slug, frame.src, 2000)}
+            data-srcset={photoSrcSet(gallery.slug, frame.src)}
+            data-width={frame.photo!.width}
+            data-height={frame.photo!.height}
+            data-alt={`${gallery.title} — ${frame.caption}`}
+          >
+            <img
+              src={photoUrl(gallery.slug, frame.src, 640)}
+              sizes="(min-width: 64rem) 28vw, 46vw"
+              srcset={photoSrcSet(gallery.slug, frame.src)}
+              alt={`${gallery.title} — ${frame.caption}`}
+              width={frame.photo!.width}
+              height={frame.photo!.height}
+              loading="lazy"
+              decoding="async"
+            />
+          </button>
+          <figcaption class="cluster__caption">{frame.caption}</figcaption>
+        </figure>
+      ))
+    }
+
+    <p class="cluster__statement" data-statement>{story.statement}</p>
+  </div>
+</section>
+
+<style>
+  .cluster {
+    position: relative;
+    padding-block: clamp(5rem, 14vh, 10rem);
+    overflow: clip;
+  }
+
+  .cluster__field {
+    position: relative;
+    display: grid;
+    grid-template-columns: repeat(12, 1fr);
+    gap: var(--space-sm);
+  }
+
+  .cluster__card {
+    margin: 0;
+    will-change: transform;
+  }
+
+  .cluster__btn {
+    display: block;
+    width: 100%;
+    padding: 0;
+    border: 0;
+    background: var(--bg-elev);
+    cursor: pointer;
+    /* Two layers rather than one heavy blur: a tight contact shadow that
+       seats the photograph on the page, and a wide soft one that gives it
+       height. A single dark blur on a near-white ground reads as dirt. */
+    box-shadow:
+      0 2px 6px rgba(23, 24, 26, 0.07),
+      0 14px 36px rgba(23, 24, 26, 0.15);
+    /* Nothing moves on hover; only the shadow breathes. */
+    transition: box-shadow 420ms var(--ease-out);
+  }
+
+  .cluster__card:hover .cluster__btn {
+    box-shadow:
+      0 3px 8px rgba(23, 24, 26, 0.09),
+      0 20px 48px rgba(23, 24, 26, 0.21);
+  }
+
+  .cluster__btn img {
+    width: 100%;
+    height: auto;
+  }
+
+  .cluster__caption {
+    /* Tucked close so the label reads as part of the photograph rather
+       than as separate body text under it. */
+    padding-top: 0.4rem;
+    font-size: var(--step--1);
+    font-weight: 500;
+    text-transform: uppercase;
+    /* Uppercase needs more tracking than mixed case to stay legible at
+       this size; 0.05em matches the .meta labels used site-wide. */
+    letter-spacing: 0.05em;
+    color: var(--fg-dim);
+    transition: color var(--dur) var(--ease-out);
+  }
+
+  .cluster__card:hover .cluster__caption {
+    color: var(--fg);
+  }
+
+  /* --- The scatter -------------------------------------------------
+     Explicit placement rather than auto-flow: the irregularity is the
+     point, and margins push frames off each other's baselines.        */
+  .cluster__card--1 {
+    grid-column: 1 / span 4;
+    grid-row: 1;
+  }
+
+  .cluster__card--2 {
+    grid-column: 8 / span 4;
+    grid-row: 1;
+    margin-top: clamp(3rem, 9vh, 7rem);
+  }
+
+  .cluster__card--3 {
+    grid-column: 3 / span 4;
+    grid-row: 2;
+    margin-top: clamp(1.5rem, 5vh, 4rem);
+  }
+
+  .cluster__card--4 {
+    grid-column: 9 / span 3;
+    grid-row: 2;
+    margin-top: clamp(4rem, 12vh, 9rem);
+  }
+
+  .cluster__card--5 {
+    grid-column: 2 / span 3;
+    grid-row: 4;
+  }
+
+  .cluster__card--6 {
+    grid-column: 7 / span 4;
+    grid-row: 4;
+    margin-top: clamp(2rem, 7vh, 5rem);
+  }
+
+  .cluster__statement {
+    grid-column: 1 / span 8;
+    grid-row: 3;
+    font-family: var(--font-display);
+    font-weight: 600;
+    font-size: var(--step-3);
+    line-height: 1.05;
+    letter-spacing: -0.035em;
+    max-width: 20ch;
+    margin-block: clamp(4rem, 12vh, 9rem);
+    text-wrap: balance;
+  }
+
+  /* --- Tablet ------------------------------------------------------- */
+  @media (max-width: 63.99rem) {
+    .cluster__card--1 { grid-column: 1 / span 6; grid-row: 1; }
+    .cluster__card--2 { grid-column: 8 / span 5; grid-row: 1; margin-top: 6vh; }
+    .cluster__card--3 { grid-column: 2 / span 5; grid-row: 2; margin-top: 3vh; }
+    .cluster__card--4 { grid-column: 8 / span 5; grid-row: 2; margin-top: 8vh; }
+    .cluster__card--5 { grid-column: 1 / span 5; grid-row: 4; }
+    .cluster__card--6 { grid-column: 7 / span 6; grid-row: 4; margin-top: 5vh; }
+    .cluster__statement { grid-column: 1 / span 10; }
+  }
+
+  /* --- Phone -------------------------------------------------------- */
+  @media (max-width: 47.99rem) {
+    .cluster__field {
+      grid-template-columns: repeat(6, 1fr);
+      gap: var(--space-xs);
+    }
+
+    .cluster__card--1 { grid-column: 1 / span 4; grid-row: 1; }
+    .cluster__card--2 { grid-column: 3 / span 4; grid-row: 2; margin-top: 2vh; }
+    .cluster__card--3 { grid-column: 1 / span 4; grid-row: 3; margin-top: 2vh; }
+    .cluster__card--4 { grid-column: 3 / span 4; grid-row: 5; margin-top: 0; }
+    .cluster__card--5 { grid-column: 1 / span 4; grid-row: 6; margin-top: 2vh; }
+    .cluster__card--6 { grid-column: 3 / span 4; grid-row: 7; margin-top: 2vh; }
+
+    .cluster__statement {
+      grid-column: 1 / span 6;
+      grid-row: 4;
+      margin-block: clamp(3rem, 8vh, 5rem);
+    }
+  }
+
+  /* Arrival: a plain fade, no travel. */
+  .js .cluster__card {
+    opacity: 0;
+  }
+
+  .js .cluster__card.is-in {
+    opacity: 1;
+    transition: opacity 800ms var(--ease-out);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .js .cluster__card {
+      opacity: 1;
+    }
+  }
+</style>
+
+<script>
+  import { ScrollTrigger, prefersReducedMotion } from '../scripts/motion';
+
+  const cards = Array.from(
+    document.querySelectorAll<HTMLElement>('.cluster__card'),
+  );
+
+  if (prefersReducedMotion()) {
+    cards.forEach((card) => card.classList.add('is-in'));
+  } else {
+    // Each photograph simply fades up as it comes into view — the fade is
+    // a CSS transition on .is-in, so nothing here touches transform and
+    // the parallax tween keeps sole ownership of it.
+    cards.forEach((card) => {
+      ScrollTrigger.create({
+        trigger: card,
+        start: 'top 92%',
+        once: true,
+        onEnter: () => card.classList.add('is-in'),
+      });
+    });
+  }
+</script>

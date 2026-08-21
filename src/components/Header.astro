@@ -1,0 +1,384 @@
+---
+interface Props {
+  transparent?: boolean;
+}
+
+const { transparent = false } = Astro.props;
+const path = Astro.url.pathname;
+
+// About and Contact exist both as homepage sections and as standalone
+// pages. On the homepage the nav scrolls to the section (Lenis handles the
+// glide); anywhere else it navigates to the real page, so no link is dead.
+const isHome = path === '/';
+
+const links = isHome
+  ? [
+      { href: '#work', label: 'Work' },
+      { href: '#about', label: 'About' },
+      { href: '#contact', label: 'Contact' },
+    ]
+  : [
+      { href: '/', label: 'Work' },
+      { href: '/about/', label: 'About' },
+      { href: '/contact/', label: 'Contact' },
+    ];
+
+// Only meaningful for real page links; in-page anchors aren't "current".
+const isCurrent = (href: string) =>
+  !isHome && href !== '/' && path.startsWith(href);
+---
+
+<header class:list={['site-header', { 'site-header--transparent': transparent }]} data-header>
+  <div class="site-header__inner">
+    <a class="wordmark" href="/">
+      Ido Yavin
+      <span class="visually-hidden">— home</span>
+    </a>
+
+    <nav class="nav" aria-label="Main">
+      <ul class="nav__list">
+        {
+          links.map((link) => (
+            <li>
+              <a
+                class="nav__link link"
+                href={link.href}
+                aria-current={isCurrent(link.href) ? 'page' : undefined}
+              >
+                {link.label}
+              </a>
+            </li>
+          ))
+        }
+      </ul>
+    </nav>
+
+    <button
+      class="menu-toggle"
+      type="button"
+      aria-expanded="false"
+      aria-controls="mobile-menu"
+      data-menu-toggle
+    >
+      <span class="visually-hidden">Menu</span>
+      <span class="menu-toggle__bar" aria-hidden="true"></span>
+      <span class="menu-toggle__bar" aria-hidden="true"></span>
+    </button>
+  </div>
+
+  {/* Reading position. Decorative — the scrollbar already conveys this to
+      assistive tech, so it's hidden from the accessibility tree. */}
+  <div class="progress" aria-hidden="true"><span class="progress__bar"></span></div>
+</header>
+
+<div class="mobile-menu" id="mobile-menu" hidden data-mobile-menu>
+  <nav aria-label="Mobile">
+    <ul class="mobile-menu__list">
+      {
+        links.map((link) => (
+          <li>
+            <a
+              class="mobile-menu__link display"
+              href={link.href}
+              aria-current={isCurrent(link.href) ? 'page' : undefined}
+            >
+              {link.label}
+            </a>
+          </li>
+        ))
+      }
+    </ul>
+  </nav>
+</div>
+
+<style>
+  .site-header {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 100;
+    background: var(--bg);
+    border-bottom: 1px solid var(--line);
+    transition:
+      background-color var(--dur) var(--ease-out),
+      border-color var(--dur) var(--ease-out);
+  }
+
+  /* Over a full-bleed hero the bar floats until the page is scrolled.
+     While floating it sits on a photograph, so it switches to light ink
+     and back again once it solidifies onto the page. */
+  .site-header--transparent {
+    background: transparent;
+    border-bottom-color: transparent;
+    color: var(--on-photo);
+  }
+
+  /* A hero photo with a bright sky would leave the wordmark and nav at
+     roughly 2.8:1. This band sits behind them only, so the photograph
+     itself stays untouched below it. It fades out once the bar solidifies. */
+  .site-header--transparent::before {
+    content: '';
+    position: absolute;
+    inset: 0 0 auto;
+    height: calc(var(--header-h) * 2.1);
+    background: linear-gradient(
+      to bottom,
+      rgba(10, 10, 11, 0.72) 0%,
+      rgba(10, 10, 11, 0.4) 45%,
+      rgba(10, 10, 11, 0) 100%
+    );
+    pointer-events: none;
+    transition: opacity var(--dur) var(--ease-out);
+  }
+
+  .site-header--transparent.is-stuck {
+    color: var(--fg);
+  }
+
+  /* With the menu open the bar sits on the light overlay, not the
+     photograph, so light ink would vanish. */
+  .site-header--transparent:has(.menu-toggle[aria-expanded='true']) {
+    color: var(--fg);
+  }
+
+  .site-header--transparent:has(.menu-toggle[aria-expanded='true'])::before {
+    opacity: 0;
+  }
+
+  .site-header--transparent.is-stuck::before {
+    opacity: 0;
+  }
+
+  .site-header--transparent.is-stuck {
+    background: var(--bg-overlay);
+    backdrop-filter: blur(14px);
+    border-bottom-color: var(--line);
+  }
+
+  .site-header__inner {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-sm);
+    height: var(--header-h);
+    max-width: 90rem;
+    margin-inline: auto;
+    padding-inline: var(--gutter);
+  }
+
+  .progress {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: -1px;
+    height: 1px;
+    overflow: hidden;
+  }
+
+  .progress__bar {
+    display: block;
+    height: 100%;
+    background: currentColor;
+    transform-origin: 0 50%;
+    /* --progress is written by the scroll handler below. */
+    transform: scaleX(var(--progress, 0));
+  }
+
+  .wordmark {
+    display: inline-flex;
+    align-items: center;
+    min-height: 2.75rem;
+    font-family: var(--font-display);
+    font-size: var(--step-1);
+    font-weight: 600;
+    letter-spacing: -0.03em;
+    white-space: nowrap;
+  }
+
+  .nav__list {
+    display: flex;
+    gap: var(--space-md);
+    list-style: none;
+    padding: 0;
+  }
+
+  .nav__link {
+    display: inline-flex;
+    align-items: center;
+    min-height: 2.75rem;
+    font-size: var(--step-0);
+    font-weight: 500;
+    letter-spacing: -0.01em;
+    /* Inherits the bar's ink so it flips with the header over a photo. */
+    color: inherit;
+    opacity: 0.62;
+    transition: opacity var(--dur) var(--ease-out);
+  }
+
+  .nav__link:hover,
+  .nav__link[aria-current='page'] {
+    opacity: 1;
+  }
+
+  .nav__link[aria-current='page'] {
+    --link-scale: 1;
+  }
+
+  /* --- Mobile menu ------------------------------------------------ */
+
+  .menu-toggle {
+    display: none;
+    /* 44px touch target */
+    width: 2.75rem;
+    height: 2.75rem;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0.4rem;
+    padding: 0;
+    background: none;
+    border: 0;
+    cursor: pointer;
+  }
+
+  .menu-toggle__bar {
+    display: block;
+    width: 1.5rem;
+    height: 1px;
+    background: currentColor;
+    transition: transform var(--dur) var(--ease-out);
+  }
+
+  .menu-toggle[aria-expanded='true'] .menu-toggle__bar:first-child {
+    transform: translateY(0.2rem) rotate(45deg);
+  }
+
+  .menu-toggle[aria-expanded='true'] .menu-toggle__bar:last-child {
+    transform: translateY(-0.2rem) rotate(-45deg);
+  }
+
+  .mobile-menu {
+    position: fixed;
+    inset: 0;
+    z-index: 99;
+    display: grid;
+    place-items: center;
+    background: var(--bg);
+    /* The overlay is always the page surface, never a photograph. */
+    color: var(--fg);
+    padding-top: var(--header-h);
+  }
+
+  .mobile-menu[hidden] {
+    display: none;
+  }
+
+  .mobile-menu__list {
+    display: grid;
+    gap: var(--space-sm);
+    list-style: none;
+    padding: 0;
+    text-align: center;
+  }
+
+  .mobile-menu__link {
+    display: block;
+    padding: 0.5rem 1rem;
+    font-size: var(--step-3);
+    letter-spacing: -0.035em;
+    color: var(--fg-muted);
+    transition: color var(--dur) var(--ease-out);
+  }
+
+  .mobile-menu__link[aria-current='page'],
+  .mobile-menu__link:hover {
+    color: var(--fg);
+  }
+
+  @media (max-width: 47.99rem) {
+    .nav {
+      display: none;
+    }
+
+    .menu-toggle {
+      display: flex;
+    }
+  }
+</style>
+
+<script>
+  const header = document.querySelector<HTMLElement>('[data-header]');
+  const toggle = document.querySelector<HTMLButtonElement>('[data-menu-toggle]');
+  const menu = document.querySelector<HTMLElement>('[data-mobile-menu]');
+
+  const bar = document.querySelector<HTMLElement>('.progress__bar');
+  const transparent = header?.classList.contains('site-header--transparent');
+
+  if (header && (transparent || bar)) {
+    let queued = false;
+
+    const update = () => {
+      queued = false;
+
+      if (transparent) {
+        header.classList.toggle('is-stuck', window.scrollY > 40);
+      }
+
+      if (bar) {
+        const max = document.documentElement.scrollHeight - window.innerHeight;
+        // A page shorter than the viewport has no reading position to report.
+        bar.style.setProperty(
+          '--progress',
+          max > 0 ? String(Math.min(1, window.scrollY / max)) : '0',
+        );
+      }
+    };
+
+    // Coalesce to one write per frame — scroll fires far faster than paint.
+    const onScroll = () => {
+      if (queued) return;
+      queued = true;
+      requestAnimationFrame(update);
+    };
+
+    update();
+    window.addEventListener('scroll', onScroll, { passive: true });
+    window.addEventListener('resize', onScroll, { passive: true });
+  }
+
+  if (toggle && menu) {
+    const setOpen = (open: boolean) => {
+      toggle.setAttribute('aria-expanded', String(open));
+      menu.hidden = !open;
+      // Stop the page behind the overlay from scrolling.
+      document.body.style.overflow = open ? 'hidden' : '';
+      if (open) menu.querySelector<HTMLAnchorElement>('a')?.focus();
+    };
+
+    toggle.addEventListener('click', () => {
+      setOpen(toggle.getAttribute('aria-expanded') !== 'true');
+    });
+
+    // On the homepage the menu links are in-page anchors, so no navigation
+    // happens to dismiss the overlay — close it explicitly.
+    menu.querySelectorAll('a').forEach((link) => {
+      link.addEventListener('click', () => setOpen(false));
+    });
+
+    document.addEventListener('keydown', (event) => {
+      if (event.key === 'Escape' && !menu.hidden) {
+        setOpen(false);
+        toggle.focus();
+      }
+    });
+
+    // Reset if the viewport grows past the mobile breakpoint while open.
+    const desktop = window.matchMedia('(min-width: 48rem)');
+    desktop.addEventListener('change', (event) => {
+      if (event.matches) setOpen(false);
+    });
+  }
+</script>

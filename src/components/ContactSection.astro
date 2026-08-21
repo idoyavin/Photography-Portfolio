@@ -1,0 +1,134 @@
+---
+/**
+ * Closing section of the homepage scroll: a heading and a row of icon
+ * buttons, nothing else.
+ *
+ * Icon-only controls need an accessible name from somewhere — each one
+ * carries visually-hidden text (which also names the destination for a
+ * screen reader) plus a `title` so a sighted visitor who doesn't
+ * recognise a mark gets a native tooltip.
+ */
+import { SITE } from '../data/site';
+import Icon from './Icon.astro';
+
+const actions = [
+  {
+    icon: 'mail' as const,
+    label: `Email ${SITE.email}`,
+    tooltip: SITE.email,
+    href: `mailto:${SITE.email}`,
+    external: false,
+  },
+  {
+    icon: 'instagram' as const,
+    label: 'Instagram — @ido_yavin',
+    tooltip: 'Instagram',
+    href: SITE.socials[0].href,
+    external: true,
+  },
+  {
+    icon: 'tiktok' as const,
+    label: 'TikTok — @ido_yavin',
+    tooltip: 'TikTok',
+    href: SITE.socials[1].href,
+    external: true,
+  },
+  {
+    icon: 'message' as const,
+    label: 'Send a message',
+    tooltip: 'Send a message',
+    href: '/contact/',
+    external: false,
+  },
+];
+---
+
+<section class="contact-sec" id="contact" data-contact aria-labelledby="contact-heading">
+  <div class="shell contact-sec__inner">
+    <p class="meta" data-reveal>Available for commissions</p>
+
+    <h2 class="contact-sec__title" id="contact-heading" data-title>
+      Let's make something.
+    </h2>
+
+    <ul class="contact-icons" data-reveal>
+      {
+        actions.map((action) => (
+          <li>
+            <a
+              class="contact-icon"
+              href={action.href}
+              title={action.tooltip}
+              target={action.external ? '_blank' : undefined}
+              rel={action.external ? 'noopener noreferrer' : undefined}
+            >
+              <Icon name={action.icon} />
+              <span class="visually-hidden">
+                {action.label}
+                {action.external ? ' (opens in a new tab)' : ''}
+              </span>
+            </a>
+          </li>
+        ))
+      }
+    </ul>
+  </div>
+</section>
+
+<style>
+  .contact-sec {
+    padding-block: clamp(6rem, 18vh, 12rem) var(--space-lg);
+  }
+
+  .contact-sec__inner {
+    display: grid;
+    gap: var(--space-xs);
+    justify-items: flex-start;
+  }
+
+  .contact-sec__title {
+    font-size: var(--step-4);
+    line-height: 0.95;
+    letter-spacing: -0.045em;
+    max-width: 14ch;
+  }
+
+  .contact-icons {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-xs);
+    list-style: none;
+    padding: 0;
+    margin-top: var(--space-md);
+  }
+
+  .contact-icon {
+    display: grid;
+    place-items: center;
+    /* Comfortably past the 44px minimum — these are the only controls in
+       the section, so they carry the whole invitation. */
+    width: 3.5rem;
+    height: 3.5rem;
+    border: 1px solid var(--line-strong);
+    border-radius: 50%;
+    color: var(--fg-muted);
+    transition:
+      background-color var(--dur) var(--ease-out),
+      border-color var(--dur) var(--ease-out),
+      color var(--dur) var(--ease-out);
+  }
+
+  .contact-icon:hover,
+  .contact-icon:focus-visible {
+    background: var(--fg);
+    border-color: var(--fg);
+    color: var(--bg);
+  }
+
+  @media (min-width: 48rem) {
+    .contact-icon {
+      width: 4rem;
+      height: 4rem;
+    }
+  }
+</style>

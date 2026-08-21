@@ -1,0 +1,95 @@
+---
+import Header from '../components/Header.astro';
+import Footer from '../components/Footer.astro';
+import '../styles/global.css';
+
+interface Props {
+  title: string;
+  description: string;
+  /** Absolute path to the social preview image */
+  ogImage?: string;
+  /** Hero pages draw their own full-bleed image behind the header */
+  transparentHeader?: boolean;
+}
+
+const {
+  title,
+  description,
+  ogImage = '/media/tour-du-mont-blanc/img-5959-1280.webp',
+  transparentHeader = false,
+} = Astro.props;
+
+const fullTitle = title === 'Ido Yavin' ? title : `${title} — Ido Yavin`;
+const canonical = new URL(Astro.url.pathname, Astro.site);
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{fullTitle}</title>
+    <meta name="description" content={description} />
+    <link rel="canonical" href={canonical} />
+
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content={fullTitle} />
+    <meta property="og:description" content={description} />
+    <meta property="og:image" content={new URL(ogImage, Astro.site)} />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="theme-color" content="#f7f7f6" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500;600&family=Inter:wght@400;500&display=swap"
+    />
+
+    {/* Set before paint so reveal elements never flash in at full opacity */}
+    <script is:inline>
+      document.documentElement.classList.add('js');
+    </script>
+  </head>
+
+  <body>
+    <a class="skip-link" href="#main">Skip to content</a>
+    <Header transparent={transparentHeader} />
+    <main id="main" tabindex="-1">
+      <slot />
+    </main>
+    <Footer />
+
+    <script>
+      import {
+        gsap,
+        ScrollTrigger,
+        initSmoothScroll,
+        prefersReducedMotion,
+      } from '../scripts/motion';
+
+      initSmoothScroll();
+
+      // Reveal-on-scroll, driven by ScrollTrigger so it shares a clock with
+      // every other scroll effect. Elements are only hidden when JS runs
+      // (see the .js guard in global.css), so this is purely additive.
+      const items = document.querySelectorAll<HTMLElement>('[data-reveal]');
+
+      if (prefersReducedMotion()) {
+        items.forEach((el) => el.classList.add('is-revealed'));
+      } else {
+        items.forEach((el) => {
+          ScrollTrigger.create({
+            trigger: el,
+            start: 'top 88%',
+            once: true,
+            onEnter: () => el.classList.add('is-revealed'),
+          });
+        });
+        // Anything already above the fold on load reveals immediately.
+        ScrollTrigger.refresh();
+      }
+    </script>
+  </body>
+</html>

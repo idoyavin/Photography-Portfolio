@@ -1,0 +1,156 @@
+---
+import Base from '../layouts/Base.astro';
+import { SITE } from '../data/site';
+import { photoUrl, photoSrcSet } from '../data/galleries';
+
+// A frame with the photographer in it, rather than another landscape.
+const portrait = { gallery: 'austria', src: 'mg-6704' };
+---
+
+<Base
+  title="About"
+  description="Ido Yavin is an Israel-based photographer working in landscape, wildlife and the outdoors."
+>
+  <div class="shell about">
+    <div class="about__media" data-reveal>
+      <img
+        src={photoUrl(portrait.gallery, portrait.src, 640)}
+        srcset={photoSrcSet(portrait.gallery, portrait.src)}
+        sizes="(min-width: 64rem) 40vw, 90vw"
+        alt="Ido Yavin standing on a ridge, looking out over snow-covered Austrian peaks"
+        width="3922"
+        height="5229"
+        loading="eager"
+        decoding="async"
+      />
+    </div>
+
+    <div class="about__body" data-reveal>
+      <p class="meta">About</p>
+      <h1 class="about__title display">Hey, I'm Ido.</h1>
+
+      <div class="prose">
+        <p>
+          I'm a 21-year-old photographer based in Israel. I picked up a camera at
+          fourteen and have not really put it down since.
+        </p>
+        <p>
+          My work is nature and everything outdoors — landscapes, wildlife,
+          hiking, and the harder edges of it. Most of these frames were made on
+          foot: eleven days around the Tour du Mont Blanc, alpine passes in
+          Austria, the Dolomites, and the desert and coastline closer to home.
+        </p>
+        <p>
+          I'm drawn to the quiet hours either side of the day, when the light
+          does most of the work and the landscape decides what it wants to show
+          you.
+        </p>
+      </div>
+
+      <div class="about__links">
+        <a class="btn" href="/contact/">Get in touch</a>
+        <ul class="about__social" aria-label="Social links">
+          {
+            SITE.socials.map((social) => (
+              <li>
+                <a
+                  class="about__social-link link"
+                  href={social.href}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  {social.label}
+                  <span class="visually-hidden">(opens in a new tab)</span>
+                </a>
+              </li>
+            ))
+          }
+        </ul>
+      </div>
+    </div>
+  </div>
+</Base>
+
+<style>
+  .about {
+    display: grid;
+    gap: var(--space-lg);
+    align-items: start;
+    padding-top: calc(var(--header-h) + var(--space-lg));
+  }
+
+  @media (min-width: 64rem) {
+    .about {
+      grid-template-columns: minmax(0, 4fr) minmax(0, 5fr);
+      gap: var(--space-xl);
+    }
+
+    .about__media {
+      position: sticky;
+      top: calc(var(--header-h) + var(--space-sm));
+    }
+  }
+
+  .about__media {
+    background: var(--bg-elev);
+    overflow: hidden;
+  }
+
+  .about__media img {
+    width: 100%;
+    height: auto;
+    /* mg-6704 is 3922×5229 — exactly 3:4, so this crops nothing. */
+    aspect-ratio: 3 / 4;
+    object-fit: cover;
+  }
+
+  .about__body {
+    display: grid;
+    gap: var(--space-xs);
+    justify-items: flex-start;
+  }
+
+  .about__title {
+    font-size: var(--step-4);
+    line-height: 0.95;
+    letter-spacing: -0.045em;
+  }
+
+  .prose {
+    display: grid;
+    gap: var(--space-xs);
+    max-width: var(--measure);
+    color: var(--fg-muted);
+    font-size: var(--step-1);
+    line-height: 1.65;
+  }
+
+  .about__links {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--space-sm);
+    margin-top: var(--space-sm);
+  }
+
+  .about__social {
+    display: flex;
+    gap: var(--space-sm);
+    list-style: none;
+    padding: 0;
+  }
+
+  .about__social-link {
+    display: inline-flex;
+    align-items: center;
+    min-height: 2.75rem;
+    font-size: var(--step-0);
+    font-weight: 500;
+    color: var(--fg-muted);
+    transition: color var(--dur) var(--ease-out);
+  }
+
+  .about__social-link:hover {
+    color: var(--fg);
+  }
+</style>

@@ -1,0 +1,251 @@
+---
+import { HERO_SLIDES, SITE } from '../data/site';
+import { photoUrl, photoSrcSet } from '../data/galleries';
+---
+
+<section class="hero" data-hero>
+  <div class="hero__stage">
+    {
+      HERO_SLIDES.map((slide, index) => (
+        <figure
+          class:list={['hero__slide', { 'is-active': index === 0 }]}
+          data-slide
+          aria-hidden={index === 0 ? undefined : 'true'}
+        >
+          {/* Every slide sits in the viewport, so loading="lazy" would be
+              ignored and all five would race the LCP image. Only the first
+              gets a real src; the rest are attached after the page loads. */}
+          <img
+            src={index === 0 ? photoUrl(slide.gallery, slide.src, 1280) : undefined}
+            srcset={index === 0 ? photoSrcSet(slide.gallery, slide.src) : undefined}
+            data-src={index === 0 ? undefined : photoUrl(slide.gallery, slide.src, 1280)}
+            data-srcset={index === 0 ? undefined : photoSrcSet(slide.gallery, slide.src)}
+            sizes="100vw"
+            alt={index === 0 ? slide.alt : ''}
+            width="1280"
+            height="1920"
+            fetchpriority={index === 0 ? 'high' : 'low'}
+            decoding="async"
+          />
+        </figure>
+      ))
+    }
+    <div class="hero__scrim" aria-hidden="true"></div>
+  </div>
+
+  <div class="hero__content shell">
+    <p class="hero__eyebrow meta">{SITE.role}</p>
+    <h1 class="hero__name display">Ido Yavin</h1>
+    <p class="hero__tagline">{SITE.tagline}</p>
+  </div>
+
+  <a class="hero__scroll" href="#work">
+    <span class="meta">Scroll</span>
+    <span class="hero__scroll-line" aria-hidden="true"></span>
+  </a>
+</section>
+
+<style>
+  .hero {
+    position: relative;
+    /* svh keeps the hero from being clipped by mobile browser chrome */
+    height: 100svh;
+    min-height: 34rem;
+    display: flex;
+    align-items: flex-end;
+    overflow: hidden;
+  }
+
+  .hero__stage {
+    position: absolute;
+    inset: 0;
+  }
+
+  .hero__slide {
+    position: absolute;
+    inset: 0;
+    margin: 0;
+    opacity: 0;
+    transition: opacity 2000ms var(--ease-out);
+  }
+
+  .hero__slide.is-active {
+    opacity: 1;
+  }
+
+  .hero__slide img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    /* Nearly all frames are portrait; bias the crop upward so skies and
+       peaks survive on wide screens rather than centring on empty ground. */
+    object-position: 50% 38%;
+  }
+
+  .hero__slide.is-active img {
+    animation: drift 14s var(--ease-out) forwards;
+  }
+
+  @keyframes drift {
+    from {
+      transform: scale(1.02);
+    }
+    to {
+      transform: scale(1.09);
+    }
+  }
+
+  /* Guarantees contrast for the overlaid type on any photograph.
+     Weighted so the small eyebrow and tagline sit in genuinely dark
+     territory — a hazy bright sky would otherwise drop the text to
+     around 3:1. The mid-frame stays nearly clear so the photo reads. */
+  .hero__scrim {
+    position: absolute;
+    inset: 0;
+    background:
+      linear-gradient(
+        to top,
+        rgba(10, 10, 11, 0.94) 0%,
+        rgba(10, 10, 11, 0.86) 18%,
+        rgba(10, 10, 11, 0.6) 34%,
+        rgba(10, 10, 11, 0.18) 58%,
+        rgba(10, 10, 11, 0.08) 74%,
+        rgba(10, 10, 11, 0.3) 100%
+      );
+  }
+
+  .hero__content {
+    position: relative;
+    z-index: 1;
+    width: 100%;
+    padding-bottom: clamp(5rem, 12vh, 9rem);
+  }
+
+  /* Everything in the hero sits on a photograph, so it uses the
+     on-photo ink rather than the page's dark text colour. */
+  .hero__content {
+    color: var(--on-photo);
+    --meta-ink: var(--on-photo);
+  }
+
+  .hero__eyebrow {
+    margin-bottom: var(--space-xs);
+  }
+
+  .hero__name {
+    font-size: var(--step-5);
+    line-height: 0.9;
+    letter-spacing: -0.045em;
+  }
+
+  .hero__tagline {
+    max-width: 30ch;
+    margin-top: var(--space-xs);
+    color: var(--on-photo-dim);
+    font-size: var(--step-1);
+  }
+
+  .hero__scroll {
+    position: absolute;
+    z-index: 1;
+    left: 50%;
+    bottom: var(--space-sm);
+    transform: translateX(-50%);
+    display: grid;
+    justify-items: center;
+    gap: 0.75rem;
+    padding: 0.5rem 1rem;
+    color: var(--on-photo-dim);
+    --meta-ink: var(--on-photo-dim);
+    cursor: pointer;
+  }
+
+  .hero__scroll-line {
+    width: 1px;
+    height: 3rem;
+    background: linear-gradient(to bottom, rgba(255, 255, 255, 0.6), transparent);
+  }
+
+  .hero__scroll:hover .hero__scroll-line {
+    animation: pulse 1.4s ease-in-out infinite;
+  }
+
+  @keyframes pulse {
+    50% {
+      opacity: 0.35;
+    }
+  }
+
+  /* The scroll cue overlaps the name on short screens */
+  @media (max-height: 34rem) {
+    .hero__scroll {
+      display: none;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .hero__slide.is-active img,
+    .hero__scroll:hover .hero__scroll-line {
+      animation: none;
+    }
+  }
+</style>
+
+<script>
+  const hero = document.querySelector<HTMLElement>('[data-hero]');
+  const slides = hero
+    ? Array.from(hero.querySelectorAll<HTMLElement>('[data-slide]'))
+    : [];
+
+  if (slides.length > 1) {
+    const reduced = window.matchMedia('(prefers-reduced-motion: reduce)');
+    let index = 0;
+    let timer: number | undefined;
+
+    // Pull in the remaining slides only once the first one has painted,
+    // so they never compete with the largest contentful paint.
+    const hydrate = () => {
+      hero?.querySelectorAll<HTMLImageElement>('img[data-src]').forEach((img) => {
+        img.srcset = img.dataset.srcset ?? '';
+        img.src = img.dataset.src ?? '';
+        delete img.dataset.src;
+        delete img.dataset.srcset;
+      });
+    };
+
+    if (document.readyState === 'complete') {
+      hydrate();
+    } else {
+      window.addEventListener('load', hydrate, { once: true });
+    }
+
+    const show = (next: number) => {
+      slides[index].classList.remove('is-active');
+      slides[index].setAttribute('aria-hidden', 'true');
+      index = next;
+      slides[index].classList.add('is-active');
+      slides[index].removeAttribute('aria-hidden');
+    };
+
+    const start = () => {
+      stop();
+      // Long dwell: this is a slow cross-fade, not a carousel.
+      timer = window.setInterval(() => show((index + 1) % slides.length), 6500);
+    };
+
+    const stop = () => {
+      if (timer) window.clearInterval(timer);
+      timer = undefined;
+    };
+
+    const sync = () => (reduced.matches ? stop() : start());
+
+    sync();
+    reduced.addEventListener('change', sync);
+
+    // Don't burn cycles animating a hero nobody is looking at.
+    document.addEventListener('visibilitychange', () => {
+      document.hidden ? stop() : sync();
+    });
+  }
+</script>

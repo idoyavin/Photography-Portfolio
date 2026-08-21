@@ -1,0 +1,208 @@
+---
+import Base from '../../layouts/Base.astro';
+import GalleryGrid from '../../components/GalleryGrid.astro';
+import Lightbox from '../../components/Lightbox.astro';
+import { liveGalleries, photoUrl } from '../../data/galleries';
+
+export function getStaticPaths() {
+  // Only galleries with photographs get a page; the "coming soon" entries
+  // exist on the homepage as signposts and would render an empty grid here.
+  return liveGalleries.map((gallery) => ({
+    params: { slug: gallery.slug },
+    props: { gallery },
+  }));
+}
+
+const { gallery } = Astro.props;
+const count = gallery.photos.length;
+
+const index = liveGalleries.findIndex((g) => g.slug === gallery.slug);
+const next = liveGalleries[(index + 1) % liveGalleries.length];
+---
+
+<Base
+  title={gallery.year ? `${gallery.title} ${gallery.year}` : gallery.title}
+  description={gallery.blurb}
+  ogImage={photoUrl(gallery.slug, gallery.cover!, 1280)}
+>
+  <div class="shell">
+    <header class="gallery-head">
+      <a class="back link" href="/#work">
+        <span aria-hidden="true">←</span> All work
+      </a>
+
+      <h1 class="gallery-title display">
+        {gallery.title}
+        {gallery.year && <span class="gallery-title__year">{gallery.year}</span>}
+      </h1>
+
+      <p class="meta">{count} {count === 1 ? 'frame' : 'frames'}</p>
+      <p class="gallery-blurb">{gallery.blurb}</p>
+    </header>
+
+    <nav class="switcher" aria-label="Galleries">
+      <ul class="switcher__list">
+        {
+          liveGalleries.map((g) => (
+            <li>
+              <a
+                class="switcher__link"
+                href={`/work/${g.slug}/`}
+                aria-current={g.slug === gallery.slug ? 'page' : undefined}
+              >
+                {g.title}
+                {g.year && <span class="switcher__year">{g.year}</span>}
+              </a>
+            </li>
+          ))
+        }
+      </ul>
+    </nav>
+
+    <GalleryGrid gallery={gallery} />
+
+    <nav class="next" aria-label="Next gallery">
+      <a class="next__link" href={`/work/${next.slug}/`}>
+        <span class="meta">Next gallery</span>
+        <span class="next__title display">
+          {next.title}
+          {next.year && <span class="next__year"> {next.year}</span>}
+        </span>
+      </a>
+    </nav>
+  </div>
+
+  <Lightbox />
+</Base>
+
+<style>
+  .gallery-head {
+    display: grid;
+    gap: var(--space-xs);
+    justify-items: flex-start;
+    /* Clears the fixed header, which is opaque on gallery pages */
+    padding-top: calc(var(--header-h) + var(--space-lg));
+    padding-bottom: var(--space-lg);
+  }
+
+  .back {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    min-height: 2.75rem;
+    font-size: var(--step-0);
+    font-weight: 500;
+    color: var(--fg-muted);
+    transition: color var(--dur) var(--ease-out);
+  }
+
+  .back:hover {
+    color: var(--fg);
+  }
+
+  .gallery-title {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 0.4em;
+    font-size: var(--step-4);
+    line-height: 0.95;
+    letter-spacing: -0.045em;
+    margin-top: var(--space-2xs);
+  }
+
+  .gallery-title__year {
+    font-size: 0.3em;
+    font-weight: 500;
+    letter-spacing: -0.01em;
+    color: var(--fg-dim);
+  }
+
+  .gallery-blurb {
+    max-width: 52ch;
+    color: var(--fg-muted);
+  }
+
+  /* Sticks under the header so you can move between galleries from
+     anywhere in a long scroll, rather than returning to the homepage. */
+  .switcher {
+    position: sticky;
+    top: var(--header-h);
+    z-index: 40;
+    margin-bottom: var(--space-md);
+    padding-block: 0.75rem;
+    background: var(--bg-overlay);
+    backdrop-filter: blur(14px);
+    border-bottom: 1px solid var(--line);
+  }
+
+  .switcher__list {
+    display: flex;
+    gap: var(--space-sm);
+    list-style: none;
+    padding: 0;
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+
+  .switcher__list::-webkit-scrollbar {
+    display: none;
+  }
+
+  .switcher__link {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    min-height: 2.75rem;
+    white-space: nowrap;
+    font-size: var(--step-0);
+    font-weight: 500;
+    letter-spacing: -0.01em;
+    color: var(--fg-dim);
+    transition: color var(--dur) var(--ease-out);
+  }
+
+  .switcher__link:hover {
+    color: var(--fg);
+  }
+
+  .switcher__link[aria-current='page'] {
+    color: var(--fg);
+  }
+
+  .switcher__year {
+    font-size: 0.85em;
+    opacity: 0.6;
+  }
+
+  .next {
+    margin-top: var(--space-xl);
+    padding-top: var(--space-lg);
+    border-top: 1px solid var(--line);
+  }
+
+  .next__link {
+    display: grid;
+    gap: var(--space-2xs);
+    justify-items: flex-end;
+    text-align: right;
+  }
+
+  .next__title {
+    font-size: var(--step-3);
+    line-height: 1;
+    letter-spacing: -0.04em;
+    color: var(--fg-muted);
+    transition: color var(--dur) var(--ease-out);
+  }
+
+  .next__link:hover .next__title {
+    color: var(--fg);
+  }
+
+  .next__year {
+    color: var(--fg-dim);
+    font-size: 0.45em;
+    vertical-align: super;
+  }
+</style>

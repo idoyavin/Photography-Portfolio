@@ -1,0 +1,304 @@
+---
+// Driven entirely by the [data-photo] buttons GalleryGrid renders.
+// Uses a native <dialog>, which gives focus trapping, Esc-to-close and
+// inertness of the page behind it without reimplementing any of it.
+---
+
+<dialog class="lightbox" data-lightbox aria-label="Photograph viewer">
+  <div class="lightbox__stage">
+    <img class="lightbox__image" data-lightbox-image alt="" />
+  </div>
+
+  <button class="lightbox__close" type="button" data-lightbox-close>
+    <span class="visually-hidden">Close viewer</span>
+    <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+      <path d="M6 6l12 12M18 6L6 18" />
+    </svg>
+  </button>
+
+  <button class="lightbox__nav lightbox__nav--prev" type="button" data-lightbox-prev>
+    <span class="visually-hidden">Previous photograph</span>
+    <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+      <path d="M15 5l-7 7 7 7" />
+    </svg>
+  </button>
+
+  <button class="lightbox__nav lightbox__nav--next" type="button" data-lightbox-next>
+    <span class="visually-hidden">Next photograph</span>
+    <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+      <path d="M9 5l7 7-7 7" />
+    </svg>
+  </button>
+
+  <p class="lightbox__counter meta" data-lightbox-counter aria-live="polite"></p>
+</dialog>
+
+<style>
+  .lightbox {
+    /* Held in variables so the image's fallback cap below can never drift
+       out of sync with the stage's actual padding. */
+    --pad-y: clamp(3rem, 8vh, 5rem);
+    --pad-x: clamp(3.5rem, 10vw, 7rem);
+
+    width: 100vw;
+    max-width: 100vw;
+    height: 100svh;
+    max-height: 100svh;
+    padding: 0;
+    border: 0;
+    background: var(--bg);
+    color: var(--fg);
+    overflow: hidden;
+  }
+
+  .lightbox::backdrop {
+    background: rgba(247, 247, 246, 0.97);
+  }
+
+  /* Explicit tracks here too: the stage's height:100% is measured against
+     this row, so an implicit auto row would leave it indefinite and break
+     the image's max-height all the way down the chain. */
+  .lightbox[open] {
+    display: grid;
+    grid-template: minmax(0, 1fr) / minmax(0, 1fr);
+    place-items: center;
+  }
+
+  .lightbox__stage {
+    display: grid;
+    /* Explicit tracks, not implicit auto ones. With an auto-sized row the
+       row grows to the image's intrinsic height, which makes the image's
+       own max-height:100% resolve against an indefinite height and be
+       ignored — a 4088x5450 frame then rendered 1621px tall in a 900px
+       window. minmax(0, 1fr) of a definite stage height fixes that. */
+    grid-template: minmax(0, 1fr) / minmax(0, 1fr);
+    place-items: center;
+    width: 100%;
+    height: 100%;
+    /* Keeps the photo clear of the controls at every size */
+    padding: var(--pad-y) var(--pad-x);
+  }
+
+  .lightbox__image {
+    max-width: 100%;
+    /* min() of the container cap and an absolute viewport cap. The second
+       term doesn't depend on the grid chain resolving, so the photograph
+       cannot exceed the window even if a future layout change makes the
+       percentage indefinite again. */
+    max-height: min(100%, calc(100svh - (2 * var(--pad-y))));
+    width: auto;
+    height: auto;
+    object-fit: contain;
+    opacity: 0;
+    transition: opacity var(--dur) var(--ease-out);
+  }
+
+  .lightbox__image.is-ready {
+    opacity: 1;
+  }
+
+  .lightbox__close,
+  .lightbox__nav {
+    position: absolute;
+    display: grid;
+    place-items: center;
+    width: 3rem;
+    height: 3rem;
+    padding: 0;
+    border: 1px solid var(--line);
+    border-radius: 50%;
+    background: var(--bg);
+    color: var(--fg);
+    cursor: pointer;
+    transition:
+      background-color var(--dur) var(--ease-out),
+      border-color var(--dur) var(--ease-out),
+      color var(--dur) var(--ease-out),
+      opacity var(--dur) var(--ease-out);
+  }
+
+  .lightbox__close:hover:not(:disabled),
+  .lightbox__nav:hover:not(:disabled) {
+    background: var(--fg);
+    border-color: var(--fg);
+    color: var(--bg);
+  }
+
+  .lightbox__close:disabled,
+  .lightbox__nav:disabled {
+    opacity: 0.3;
+    cursor: default;
+  }
+
+  .lightbox__close svg,
+  .lightbox__nav svg {
+    width: 1.35rem;
+    height: 1.35rem;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1.4;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+
+  .lightbox__close {
+    top: clamp(0.75rem, 2vh, 1.5rem);
+    right: clamp(0.75rem, 2vw, 1.5rem);
+  }
+
+  .lightbox__nav {
+    top: 50%;
+    transform: translateY(-50%);
+  }
+
+  .lightbox__nav--prev {
+    left: clamp(0.5rem, 2vw, 1.5rem);
+  }
+
+  .lightbox__nav--next {
+    right: clamp(0.5rem, 2vw, 1.5rem);
+  }
+
+  .lightbox__counter {
+    position: absolute;
+    bottom: clamp(0.9rem, 3vh, 1.75rem);
+    left: 50%;
+    transform: translateX(-50%);
+    margin: 0;
+    color: var(--fg-muted);
+  }
+</style>
+
+<script>
+  type Frame = {
+    full: string;
+    srcset: string;
+    alt: string;
+    width: number;
+    height: number;
+  };
+
+  const dialog = document.querySelector<HTMLDialogElement>('[data-lightbox]');
+  const image = document.querySelector<HTMLImageElement>('[data-lightbox-image]');
+  const counter = document.querySelector<HTMLElement>('[data-lightbox-counter]');
+  const btnPrev = document.querySelector<HTMLButtonElement>('[data-lightbox-prev]');
+  const btnNext = document.querySelector<HTMLButtonElement>('[data-lightbox-next]');
+  const btnClose = document.querySelector<HTMLButtonElement>('[data-lightbox-close]');
+  const triggers = Array.from(
+    document.querySelectorAll<HTMLButtonElement>('[data-photo]'),
+  );
+
+  if (dialog && image && triggers.length) {
+    const frames: Frame[] = triggers.map((el) => ({
+      full: el.dataset.full ?? '',
+      srcset: el.dataset.srcset ?? '',
+      alt: el.dataset.alt ?? '',
+      width: Number(el.dataset.width ?? 0),
+      height: Number(el.dataset.height ?? 0),
+    }));
+
+    let current = 0;
+    let opener: HTMLButtonElement | null = null;
+
+    const render = (index: number) => {
+      current = (index + frames.length) % frames.length;
+      const frame = frames[current];
+
+      image.classList.remove('is-ready');
+      // Set dimensions before src so the browser reserves the right box
+      // and the image doesn't jump as it decodes.
+      image.width = frame.width;
+      image.height = frame.height;
+      image.alt = frame.alt;
+      image.srcset = frame.srcset;
+      image.sizes = '100vw';
+      image.src = frame.full;
+
+      const ready = () => image.classList.add('is-ready');
+      image.complete ? ready() : image.addEventListener('load', ready, { once: true });
+
+      if (counter) {
+        counter.textContent = `${current + 1} / ${frames.length}`;
+      }
+
+      // A single-photo gallery has nowhere to navigate.
+      const solo = frames.length < 2;
+      if (btnPrev) btnPrev.disabled = solo;
+      if (btnNext) btnNext.disabled = solo;
+    };
+
+    const open = (index: number, from: HTMLButtonElement) => {
+      opener = from;
+      render(index);
+      // <dialog> restores focus on close to whatever was focused before
+      // showModal(). Clicking a button doesn't focus it in every browser,
+      // so focus it here to make that restoration land on the right frame.
+      from.focus();
+      dialog.showModal();
+      document.body.style.overflow = 'hidden';
+    };
+
+    triggers.forEach((trigger, index) => {
+      trigger.addEventListener('click', () => open(index, trigger));
+    });
+
+    btnPrev?.addEventListener('click', () => render(current - 1));
+    btnNext?.addEventListener('click', () => render(current + 1));
+    btnClose?.addEventListener('click', () => dialog.close());
+
+    dialog.addEventListener('keydown', (event) => {
+      if (event.key === 'ArrowLeft') {
+        event.preventDefault();
+        render(current - 1);
+      }
+      if (event.key === 'ArrowRight') {
+        event.preventDefault();
+        render(current + 1);
+      }
+    });
+
+    // Clicking the empty area around the photo closes the viewer.
+    // The controls sit outside .lightbox__stage, so they aren't caught here.
+    dialog.addEventListener('click', (event) => {
+      const target = event.target as HTMLElement;
+      if (target === dialog || target.classList.contains('lightbox__stage')) {
+        dialog.close();
+      }
+    });
+
+    dialog.addEventListener('close', () => {
+      document.body.style.overflow = '';
+      // Native restoration runs after this handler, so only step in on the
+      // next frame, and only if focus was actually dropped to the page body.
+      requestAnimationFrame(() => {
+        if (document.activeElement === document.body) opener?.focus();
+      });
+    });
+
+    // --- Swipe -------------------------------------------------------
+    let startX = 0;
+    let startY = 0;
+
+    dialog.addEventListener(
+      'touchstart',
+      (event) => {
+        startX = event.changedTouches[0].clientX;
+        startY = event.changedTouches[0].clientY;
+      },
+      { passive: true },
+    );
+
+    dialog.addEventListener(
+      'touchend',
+      (event) => {
+        const dx = event.changedTouches[0].clientX - startX;
+        const dy = event.changedTouches[0].clientY - startY;
+        // Ignore mostly-vertical drags so scrolling gestures don't page.
+        if (Math.abs(dx) > 50 && Math.abs(dx) > Math.abs(dy)) {
+          render(dx < 0 ? current + 1 : current - 1);
+        }
+      },
+      { passive: true },
+    );
+  }
+</script>

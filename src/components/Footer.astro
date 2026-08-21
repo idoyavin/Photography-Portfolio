@@ -1,0 +1,47 @@
+---
+/**
+ * Deliberately bare. The email and social links live in the Contact
+ * section that closes the homepage and on /contact/ — repeating them
+ * here put the same three items twice on one screen.
+ */
+const year = new Date().getFullYear();
+---
+
+<footer class="site-footer">
+  <div class="shell site-footer__inner">
+    <p class="meta">© {year} Ido Yavin</p>
+    <a class="site-footer__link link" href="/contact/">Contact</a>
+  </div>
+</footer>
+
+<style>
+  .site-footer {
+    margin-top: var(--space-xl);
+    padding-block: var(--space-md);
+    border-top: 1px solid var(--line);
+  }
+
+  .site-footer__inner {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-sm);
+  }
+
+  .site-footer__link {
+    display: inline-flex;
+    align-items: center;
+    min-height: 2.75rem;
+    font-size: var(--step--1);
+    font-weight: 500;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    color: var(--fg-dim);
+    transition: color var(--dur) var(--ease-out);
+  }
+
+  .site-footer__link:hover {
+    color: var(--fg);
+  }
+</style>

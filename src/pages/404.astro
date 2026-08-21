@@ -1,0 +1,37 @@
+---
+import Base from '../layouts/Base.astro';
+---
+
+<Base title="Page not found" description="That page doesn't exist.">
+  <div class="shell notfound">
+    <p class="meta">Error 404</p>
+    <h1 class="notfound__title display">Nothing here.</h1>
+    <p class="notfound__text">
+      That page doesn't exist — it may have moved, or the link may be wrong.
+    </p>
+    <a class="btn" href="/">Back to the work</a>
+  </div>
+</Base>
+
+<style>
+  .notfound {
+    display: grid;
+    gap: var(--space-xs);
+    justify-items: flex-start;
+    align-content: center;
+    min-height: 70svh;
+    padding-top: calc(var(--header-h) + var(--space-lg));
+  }
+
+  .notfound__title {
+    font-size: var(--step-4);
+    line-height: 0.95;
+    letter-spacing: -0.045em;
+  }
+
+  .notfound__text {
+    max-width: 40ch;
+    color: var(--fg-muted);
+    margin-bottom: var(--space-sm);
+  }
+</style>

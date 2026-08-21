@@ -1,0 +1,279 @@
+---
+import Base from '../layouts/Base.astro';
+import Hero from '../components/Hero.astro';
+import Chapter from '../components/Chapter.astro';
+import DriftCluster from '../components/DriftCluster.astro';
+import AboutSection from '../components/AboutSection.astro';
+import ContactSection from '../components/ContactSection.astro';
+import Lightbox from '../components/Lightbox.astro';
+import { galleries, liveGalleries } from '../data/galleries';
+import { STORY } from '../data/story';
+
+const soon = galleries.filter((g) => g.comingSoon);
+---
+
+<Base
+  title="Ido Yavin"
+  description="Landscape and outdoor photography by Ido Yavin — Austria, the Tour du Mont Blanc, Italy and Israel."
+  transparentHeader
+>
+  <Hero />
+
+  <div id="work" tabindex="-1">
+    {
+      liveGalleries.map((gallery, index) => (
+        <>
+          <Chapter gallery={gallery} story={STORY[gallery.slug]} index={index} />
+          <DriftCluster gallery={gallery} story={STORY[gallery.slug]} />
+        </>
+      ))
+    }
+  </div>
+
+  <section class="soon shell" aria-label="Coming soon">
+    <p class="meta" data-reveal>Next from the archive</p>
+    <ul class="soon__list">
+      {
+        soon.map((gallery, i) => (
+          <li class="soon__item" data-reveal style={`--reveal-delay:${i * 120}ms`}>
+            <span class="soon__title display">{gallery.title}</span>
+            <span class="meta">Coming soon</span>
+          </li>
+        ))
+      }
+    </ul>
+  </section>
+
+  <AboutSection />
+  <ContactSection />
+
+  {/* Every drifting frame is a lightbox trigger; one viewer serves them all. */}
+  <Lightbox />
+</Base>
+
+<style>
+  .soon {
+    padding-block: var(--space-xl) 0;
+  }
+
+  .soon__list {
+    display: grid;
+    gap: 0;
+    list-style: none;
+    padding: 0;
+    margin-top: var(--space-sm);
+  }
+
+  .soon__item {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: var(--space-sm);
+    padding-block: var(--space-sm);
+    border-top: 1px solid var(--line);
+    opacity: 0.55;
+  }
+
+  .soon__title {
+    font-size: var(--step-3);
+    line-height: 1;
+    letter-spacing: -0.04em;
+    color: var(--fg-muted);
+  }
+</style>
+
+<script>
+  import {
+    gsap,
+    ScrollTrigger,
+    prefersReducedMotion,
+    splitWords,
+    resolveInitialHash,
+    REVEAL_Y,
+  } from '../scripts/motion';
+
+  if (!prefersReducedMotion()) {
+    // ---- Chapters: pin the stage and scrub its internal timeline ------
+    document.querySelectorAll<HTMLElement>('[data-chapter]').forEach((chapter) => {
+      const stage = chapter.querySelector<HTMLElement>('[data-stage]')!;
+      const media = chapter.querySelector<HTMLElement>('[data-media]');
+      const title = chapter.querySelector<HTMLElement>('[data-title]');
+      const meta = chapter.querySelector<HTMLElement>('[data-meta]');
+      const blurb = chapter.querySelector<HTMLElement>('[data-blurb]');
+      const cta = chapter.querySelector<HTMLElement>('[data-cta]');
+
+      const words = title ? splitWords(title) : [];
+
+      const tl = gsap.timeline({
+        defaults: { ease: 'none' },
+        scrollTrigger: {
+          trigger: chapter,
+          start: 'top top',
+          // The pin holds for 1.6 viewport-heights of scroll: enough for
+          // the roll + reveals to breathe without overstaying.
+          end: '+=160%',
+          pin: stage,
+          scrub: 0.6,
+          anticipatePin: 1,
+        },
+      });
+
+      // Cover settles from a slight push-in as the chapter arrives.
+      if (media) {
+        tl.fromTo(
+          media,
+          { scale: 1.12, yPercent: 4 },
+          { scale: 1, yPercent: 0, duration: 0.55, ease: 'power1.out' },
+          0,
+        );
+      }
+
+      // Title lifts word by word out of its masks.
+      if (words.length) {
+        tl.fromTo(
+          words,
+          { yPercent: REVEAL_Y },
+          { yPercent: 0, duration: 0.3, stagger: 0.06, ease: 'power2.out' },
+          0.08,
+        );
+      }
+
+      // Year, line and CTA follow the title in a single quiet cascade.
+      const trail = [meta, blurb, cta].filter(Boolean) as HTMLElement[];
+      if (trail.length) {
+        tl.fromTo(
+          trail,
+          { opacity: 0, y: 16 },
+          {
+            opacity: 1,
+            y: 0,
+            duration: 0.26,
+            stagger: 0.07,
+            ease: 'power2.out',
+          },
+          0.26,
+        );
+      }
+
+      // A beat of stillness at the end of the timeline lets the finished
+      // composition hold before the pin releases.
+      tl.to({}, { duration: 0.3 });
+    });
+
+    // ---- Clusters: cards drift at their own speeds ---------------------
+    document.querySelectorAll<HTMLElement>('[data-cluster]').forEach((cluster) => {
+      cluster.querySelectorAll<HTMLElement>('[data-drift]').forEach((card) => {
+        gsap.to(card, {
+          yPercent: Number(card.dataset.drift) || -14,
+          ease: 'none',
+          scrollTrigger: {
+            trigger: cluster,
+            start: 'top bottom',
+            end: 'bottom top',
+            scrub: true,
+          },
+        });
+      });
+
+      const statement = cluster.querySelector<HTMLElement>('[data-statement]');
+      if (statement) {
+        const words = splitWords(statement);
+        gsap.fromTo(
+          words,
+          { yPercent: REVEAL_Y },
+          {
+            yPercent: 0,
+            stagger: 0.05,
+            duration: 0.5,
+            ease: 'power2.out',
+            scrollTrigger: {
+              trigger: statement,
+              start: 'top 82%',
+            },
+          },
+        );
+      }
+    });
+
+    // ---- About: pinned split, lines cascading in --------------------
+    // Through gsap.matchMedia so the pin is created and reverted as the
+    // viewport crosses the breakpoint — a one-shot matchMedia check would
+    // leave a stale pin behind after a resize or an orientation change.
+    const about = document.querySelector<HTMLElement>('[data-about]');
+    const mm = gsap.matchMedia();
+
+    mm.add('(min-width: 64rem)', () => {
+      if (!about) return;
+      const stage = about.querySelector<HTMLElement>('[data-stage]')!;
+      const media = about.querySelector<HTMLElement>('[data-media]');
+      const title = about.querySelector<HTMLElement>('[data-title]');
+      const lines = about.querySelectorAll<HTMLElement>('[data-line]');
+
+      const tl = gsap.timeline({
+        defaults: { ease: 'none' },
+        scrollTrigger: {
+          trigger: about,
+          start: 'top top',
+          end: '+=120%',
+          pin: stage,
+          scrub: 0.6,
+          anticipatePin: 1,
+        },
+      });
+
+      if (media) {
+        tl.fromTo(
+          media,
+          { yPercent: 12, opacity: 0 },
+          { yPercent: 0, opacity: 1, duration: 0.4, ease: 'power2.out' },
+          0,
+        );
+      }
+
+      if (title) {
+        const words = splitWords(title);
+        tl.fromTo(
+          words,
+          { yPercent: REVEAL_Y },
+          { yPercent: 0, duration: 0.3, stagger: 0.06, ease: 'power2.out' },
+          0.1,
+        );
+      }
+
+      tl.fromTo(
+        lines,
+        { opacity: 0, y: 18 },
+        { opacity: 1, y: 0, duration: 0.26, stagger: 0.08, ease: 'power2.out' },
+        0.22,
+      );
+
+      tl.to({}, { duration: 0.25 });
+    });
+
+    // ---- Contact: closing statement ---------------------------------
+    const contactTitle = document.querySelector<HTMLElement>(
+      '[data-contact] [data-title]',
+    );
+    if (contactTitle) {
+      const words = splitWords(contactTitle);
+      gsap.fromTo(
+        words,
+        { yPercent: REVEAL_Y },
+        {
+          yPercent: 0,
+          duration: 0.55,
+          stagger: 0.06,
+          ease: 'power2.out',
+          scrollTrigger: { trigger: contactTitle, start: 'top 85%' },
+        },
+      );
+    }
+
+    // Layout above (pins) changes trigger positions below — recalculate
+    // once everything is registered.
+    ScrollTrigger.refresh();
+
+    // Only meaningful once the pins exist and positions are final.
+    resolveInitialHash();
+  }
+</script>

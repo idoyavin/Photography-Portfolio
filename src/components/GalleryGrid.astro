@@ -1,0 +1,293 @@
+---
+import type { Gallery } from '../data/galleries';
+import { photoUrl, photoSrcSet } from '../data/galleries';
+
+interface Props {
+  gallery: Gallery;
+}
+
+const { gallery } = Astro.props;
+const total = gallery.photos.length;
+---
+
+{/*
+  Justified rows, the way a contact sheet or a print wall is hung: every
+  frame keeps its own proportions and the row is what gets squared off.
+
+  Each item's flex-basis AND flex-grow are its aspect ratio, so items in a
+  row scale by the same factor — the row fills the width, and no photograph
+  is cropped to reach a shared shape. This collection needs it: Italy is
+  entirely 4:5, Israel mostly 2:3, and Austria runs 9:16 through 4:5.
+*/}
+<ul class="grid" data-gallery-grid>
+  {
+    gallery.photos.map((photo, index) => {
+      const ratio = photo.width / photo.height;
+      return (
+        <li
+          class="grid__item"
+          style={`--ar:${ratio.toFixed(4)}`}
+        >
+          <button
+            class="grid__button"
+            type="button"
+            data-photo
+            data-index={index}
+            data-full={photoUrl(gallery.slug, photo.src, 2000)}
+            data-srcset={photoSrcSet(gallery.slug, photo.src)}
+            data-width={photo.width}
+            data-height={photo.height}
+            data-alt={`${gallery.title} — photograph ${index + 1} of ${total}`}
+          >
+            <img
+              src={photoUrl(gallery.slug, photo.src, 640)}
+              srcset={photoSrcSet(gallery.slug, photo.src)}
+              sizes="(min-width: 64rem) 34vw, (min-width: 40rem) 48vw, 92vw"
+              alt={`${gallery.title} — photograph ${index + 1} of ${total}`}
+              width={photo.width}
+              height={photo.height}
+              loading={index < 4 ? 'eager' : 'lazy'}
+              decoding="async"
+            />
+            <span class="grid__badge meta" aria-hidden="true">
+              {String(index + 1).padStart(2, '0')}
+            </span>
+          </button>
+        </li>
+      );
+    })
+  }
+</ul>
+
+<style>
+  .grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-sm);
+    list-style: none;
+    padding: 0;
+  }
+
+  /* Absorbs the slack in a short final row, so those frames stay at the
+     row height instead of ballooning to fill the width on their own. */
+  .grid::after {
+    content: '';
+    flex-grow: 999999;
+  }
+
+  .grid__item {
+    min-width: 0;
+  }
+
+  .grid__button {
+    position: relative;
+    display: block;
+    width: 100%;
+    height: 100%;
+    padding: 0;
+    border: 0;
+    background: var(--bg-elev);
+    cursor: pointer;
+    overflow: hidden;
+    /* --tx/--ty are written by the pointer-tilt script; the perspective is
+       declared inline here so the card carries its own vanishing point and
+       doesn't depend on an ancestor's transform-style. */
+    transform: perspective(900px) rotateX(var(--ty, 0deg)) rotateY(var(--tx, 0deg));
+    transition:
+      transform 400ms var(--ease-out),
+      box-shadow 400ms var(--ease-out);
+  }
+
+  .grid__button:hover,
+  .grid__button:focus-visible {
+    box-shadow:
+      0 2px 6px rgba(23, 24, 26, 0.08),
+      0 20px 44px rgba(23, 24, 26, 0.14);
+  }
+
+  /* While the pointer is actually moving, drop the easing so the tilt
+     tracks the cursor instead of lagging a frame behind it. */
+  .grid__button.is-tilting {
+    transition: box-shadow 400ms var(--ease-out);
+  }
+
+  .grid__button img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    /* Matches the file's own ratio, so cover has nothing to trim. */
+    aspect-ratio: var(--ar);
+    object-fit: cover;
+    transition:
+      transform 900ms var(--ease-out),
+      opacity var(--dur) var(--ease-out);
+  }
+
+  .grid__button:hover img,
+  .grid__button:focus-visible img {
+    transform: scale(1.035);
+    opacity: 0.88;
+  }
+
+  /* Sits on the photograph, so it keeps light ink and its own shadow
+     regardless of the page being near-white. */
+  .grid__badge {
+    position: absolute;
+    left: 0.875rem;
+    bottom: 0.75rem;
+    color: var(--on-photo);
+    text-shadow: 0 1px 8px rgba(0, 0, 0, 0.8);
+    opacity: 0;
+    transition: opacity var(--dur) var(--ease-out);
+  }
+
+  .grid__button:hover .grid__badge,
+  .grid__button:focus-visible .grid__badge {
+    opacity: 1;
+  }
+
+  @media (hover: none) {
+    .grid__badge {
+      opacity: 0.75;
+    }
+  }
+
+  /* Parallax owns the item's transform (GSAP), so the fade-in lives on
+     opacity alone — the two never write the same property. */
+  .grid__item {
+    opacity: 0;
+    transition: opacity 700ms var(--ease-out);
+  }
+
+  .grid__item.is-in,
+  html:not(.js) .grid__item {
+    opacity: 1;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .grid__item {
+      opacity: 1;
+      transition: none;
+    }
+  }
+
+  /* One frame per row on phones — justification needs at least two
+     photographs across to mean anything. */
+  @media (max-width: 39.99rem) {
+    .grid::after {
+      display: none;
+    }
+
+    .grid__item {
+      flex: 1 1 100%;
+    }
+  }
+
+  /* Row height is tied to the viewport, not a fixed rem value, so a whole
+     photograph is always visible without scrolling. Rows grow past this
+     base to justify (up to ~1.25x), which is why the ceiling sits well
+     under the screen height rather than at it. */
+  @media (min-width: 40rem) {
+    .grid {
+      --row-h: clamp(11rem, 38svh, 20rem);
+    }
+
+    .grid__item {
+      flex: var(--ar) 1 calc(var(--ar) * var(--row-h));
+    }
+  }
+
+  @media (min-width: 64rem) {
+    .grid {
+      --row-h: clamp(13rem, 42svh, 26rem);
+    }
+  }
+</style>
+
+<script>
+  // Lando-style wall drift: each frame travels at its own slight parallax
+  // speed as the page scrolls, and fades in on first approach. Transform
+  // belongs to GSAP here; the fade is opacity-only via .is-in.
+  import { gsap, ScrollTrigger, prefersReducedMotion } from '../scripts/motion';
+
+  const items = Array.from(document.querySelectorAll<HTMLElement>('.grid__item'));
+
+  if (prefersReducedMotion()) {
+    items.forEach((el) => el.classList.add('is-in'));
+  } else {
+    // Subtle, column-varied speeds (skill guidance: keep deltas 5-15).
+    const SPEEDS = [-5, -13, -9];
+
+    items.forEach((el, i) => {
+      ScrollTrigger.create({
+        trigger: el,
+        start: 'top 92%',
+        once: true,
+        onEnter: () => el.classList.add('is-in'),
+      });
+
+      gsap.to(el, {
+        yPercent: SPEEDS[i % SPEEDS.length],
+        ease: 'none',
+        scrollTrigger: {
+          trigger: el,
+          start: 'top bottom',
+          end: 'bottom top',
+          scrub: true,
+        },
+      });
+    });
+
+    ScrollTrigger.refresh();
+  }
+</script>
+
+<script>
+  // Pointer-tracked tilt. Mouse/trackpad only — on touch there is no cursor
+  // to follow, and under reduced motion the card stays flat.
+  const fine = window.matchMedia('(hover: hover) and (pointer: fine)');
+  const reduced = window.matchMedia('(prefers-reduced-motion: reduce)');
+  const MAX_DEG = 5;
+
+  const cards = Array.from(
+    document.querySelectorAll<HTMLElement>('.grid__button'),
+  );
+
+  if (cards.length && fine.matches && !reduced.matches) {
+    let frame = 0;
+
+    cards.forEach((card) => {
+      const apply = (event: PointerEvent) => {
+        // One write per frame; pointermove fires far faster than we paint.
+        if (frame) return;
+        frame = requestAnimationFrame(() => {
+          frame = 0;
+          const box = card.getBoundingClientRect();
+          const px = (event.clientX - box.left) / box.width - 0.5;
+          const py = (event.clientY - box.top) / box.height - 0.5;
+          card.style.setProperty('--tx', `${(px * MAX_DEG * 2).toFixed(2)}deg`);
+          // Inverted: pushing the cursor down should tip the top toward you.
+          card.style.setProperty('--ty', `${(-py * MAX_DEG * 2).toFixed(2)}deg`);
+        });
+      };
+
+      card.addEventListener('pointerenter', (event) => {
+        card.classList.add('is-tilting');
+        apply(event);
+      });
+
+      card.addEventListener('pointermove', apply);
+
+      card.addEventListener('pointerleave', () => {
+        if (frame) {
+          cancelAnimationFrame(frame);
+          frame = 0;
+        }
+        // Drop the class first so the eased transition carries it back flat.
+        card.classList.remove('is-tilting');
+        card.style.setProperty('--tx', '0deg');
+        card.style.setProperty('--ty', '0deg');
+      });
+    });
+  }
+</script>

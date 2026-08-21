@@ -1,0 +1,145 @@
+---
+/**
+ * Homepage About chapter. Pins like a trip chapter so the scroll rhythm
+ * holds, but splits the screen — portrait one side, bio the other, on the
+ * page's own near-white ground rather than over a photograph. That keeps
+ * it reading as a break in the sequence, not a fifth destination.
+ *
+ * The standalone /about/ page still exists and carries the same copy.
+ */
+import { photoUrl, photoSrcSet } from '../data/galleries';
+
+const portrait = { gallery: 'austria', src: 'mg-6704', width: 3922, height: 5229 };
+
+const lines = [
+  "I'm a 21-year-old photographer based in Israel. I picked up a camera at fourteen and have not really put it down since.",
+  'My work is nature and everything outdoors — landscapes, wildlife, hiking, and the harder edges of it. Most of these frames were made on foot.',
+  'I\'m drawn to the quiet hours either side of the day, when the light does most of the work.',
+];
+---
+
+<section class="about-sec" id="about" data-about aria-labelledby="about-heading">
+  <div class="about-sec__stage" data-stage>
+    <div class="about-sec__inner shell">
+      <figure class="about-sec__media" data-media>
+        <img
+          src={photoUrl(portrait.gallery, portrait.src, 640)}
+          srcset={photoSrcSet(portrait.gallery, portrait.src)}
+          sizes="(min-width: 64rem) 36vw, 80vw"
+          alt="Ido Yavin standing on a ridge, looking out over snow-covered Austrian peaks"
+          width={portrait.width}
+          height={portrait.height}
+          loading="lazy"
+          decoding="async"
+        />
+      </figure>
+
+      <div class="about-sec__body">
+        <p class="meta" data-line>About</p>
+        <h2 class="about-sec__title" id="about-heading" data-title>Hey, I'm Ido.</h2>
+
+        {lines.map((line) => <p class="about-sec__line" data-line>{line}</p>)}
+
+        <div class="about-sec__actions" data-line>
+          <a class="btn" href="#contact">Get in touch</a>
+          <a class="link about-sec__more" href="/about/">Read more</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<style>
+  .about-sec {
+    position: relative;
+  }
+
+  .about-sec__stage {
+    position: relative;
+    display: flex;
+    align-items: center;
+    height: 100svh;
+    min-height: 34rem;
+    background: var(--bg);
+    overflow: hidden;
+  }
+
+  .about-sec__inner {
+    display: grid;
+    gap: var(--space-md);
+    align-items: center;
+    width: 100%;
+  }
+
+  .about-sec__media {
+    margin: 0;
+    overflow: hidden;
+    background: var(--bg-elev);
+    box-shadow: 0 24px 54px rgba(23, 24, 26, 0.12);
+  }
+
+  .about-sec__media img {
+    width: 100%;
+    height: auto;
+    /* mg-6704 is 3922x5229 — exactly 3:4, so nothing is cropped. */
+    aspect-ratio: 3 / 4;
+    object-fit: cover;
+  }
+
+  .about-sec__body {
+    display: grid;
+    gap: var(--space-xs);
+    justify-items: flex-start;
+    max-width: 46ch;
+  }
+
+  .about-sec__title {
+    font-size: var(--step-4);
+    line-height: 0.95;
+    letter-spacing: -0.045em;
+    margin-bottom: var(--space-2xs);
+  }
+
+  .about-sec__line {
+    color: var(--fg-muted);
+    font-size: var(--step-1);
+    line-height: 1.55;
+  }
+
+  .about-sec__actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--space-sm);
+    margin-top: var(--space-sm);
+  }
+
+  .about-sec__more {
+    display: inline-flex;
+    align-items: center;
+    min-height: 2.75rem;
+    font-weight: 500;
+    color: var(--fg-muted);
+  }
+
+  @media (min-width: 64rem) {
+    .about-sec__inner {
+      grid-template-columns: minmax(0, 4fr) minmax(0, 6fr);
+      gap: var(--space-xl);
+    }
+  }
+
+  /* On a phone the portrait would eat the whole pinned screen, so it
+     shrinks to a band beside nothing and the words lead instead. */
+  @media (max-width: 63.99rem) {
+    .about-sec__stage {
+      height: auto;
+      min-height: 0;
+      padding-block: var(--space-xl);
+    }
+
+    .about-sec__media {
+      max-width: 18rem;
+    }
+  }
+</style>
