@@ -44,7 +44,10 @@
   --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
 
   /* Fluid scale — min at 375px, max at 1440px */
-  --step--1: clamp(0.75rem, 0.72rem + 0.14vw, 0.82rem);
+  /* Nudged up relative to the rest of the scale. At the 75% root size the
+     original value put the small uppercase labels — captions, years, frame
+     counts — at 9.8px, which is below what is comfortably readable. */
+  --step--1: clamp(0.92rem, 0.88rem + 0.14vw, 0.98rem);
   --step-0: clamp(0.95rem, 0.92rem + 0.16vw, 1.05rem);
   --step-1: clamp(1.1rem, 1.02rem + 0.38vw, 1.35rem);
   --step-2: clamp(1.4rem, 1.15rem + 1.05vw, 2.1rem);
@@ -86,6 +89,16 @@
 }
 
 html {
+  /* The whole design is tuned to read at 75% browser zoom. Zoom scales
+     rem-based lengths but leaves vw-based ones alone, so setting the root
+     font size reproduces it exactly: every rem token (type, spacing,
+     container widths, header height) shrinks by a quarter, while the vw
+     terms in the fluid clamps and the svh-based full-screen sections stay
+     put — which is precisely what the browser was doing.
+
+     Set this back to 100% to restore the original scale. */
+  font-size: 75%;
+
   -webkit-text-size-adjust: 100%;
   scroll-behavior: smooth;
 }

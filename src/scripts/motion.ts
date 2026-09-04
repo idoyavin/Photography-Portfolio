@@ -40,8 +40,15 @@ export function scrollToSection(target: HTMLElement) {
   // inside initSmoothScroll (which early-returns under reduced motion) and
   // resolveInitialHash is called from inside the same guard.
   const pin = ScrollTrigger.getAll().find((t) => t.pin && t.trigger === target);
-  if (pin) lenis!.scrollTo(pin.start + (pin.end - pin.start) * PINNED_ANCHOR_AT);
-  else lenis!.scrollTo(target, { offset: -72 });
+  if (pin) {
+    lenis!.scrollTo(pin.start + (pin.end - pin.start) * PINNED_ANCHOR_AT);
+    return;
+  }
+
+  // Measure the header rather than hardcoding its height: it is set in rem,
+  // so it changes with the root font size.
+  const header = document.querySelector<HTMLElement>('[data-header]');
+  lenis!.scrollTo(target, { offset: -(header?.offsetHeight ?? 0) });
 }
 
 /**
