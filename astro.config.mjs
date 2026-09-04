@@ -8,7 +8,7 @@ import sitemap from '@astrojs/sitemap';
 export default defineConfig({
   // Used for canonical links, Open Graph image URLs and the sitemap.
   // MUST be the real deployed origin or social previews break.
-  site: 'https://idoyavin.com',
+  site: 'https://idoyavin.netlify.app',
   integrations: [sitemap()],
   build: {
     inlineStylesheets: 'auto',
