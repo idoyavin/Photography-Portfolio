@@ -83,15 +83,18 @@ export const galleries: Gallery[] = [
 
 export const liveGalleries = galleries.filter((g) => !g.comingSoon);
 
-/** Path to a generated WebP derivative. Widths must match scripts/optimize-images.py */
+export type PhotoExt = 'webp' | 'avif';
+
+/** Path to a generated derivative. Widths must match scripts/optimize-images.py */
 export const photoUrl = (
   slug: string,
   src: string,
   width: 640 | 1280 | 2000,
-) => `/media/${slug}/${src}-${width}.webp`;
+  ext: PhotoExt = 'webp',
+) => `/media/${slug}/${src}-${width}.${ext}`;
 
 /** srcset covering all three generated widths */
-export const photoSrcSet = (slug: string, src: string) =>
+export const photoSrcSet = (slug: string, src: string, ext: PhotoExt = 'webp') =>
   [640, 1280, 2000]
-    .map((w) => `${photoUrl(slug, src, w as 640 | 1280 | 2000)} ${w}w`)
+    .map((w) => `${photoUrl(slug, src, w as 640 | 1280 | 2000, ext)} ${w}w`)
     .join(', ');

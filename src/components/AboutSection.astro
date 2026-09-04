@@ -7,7 +7,7 @@
  *
  * The standalone /about/ page still exists and carries the same copy.
  */
-import { photoUrl, photoSrcSet } from '../data/galleries';
+import Photo from './Photo.astro';
 
 const portrait = { gallery: 'austria', src: 'mg-6704', width: 3922, height: 5229 };
 
@@ -22,15 +22,13 @@ const lines = [
   <div class="about-sec__stage" data-stage>
     <div class="about-sec__inner shell">
       <figure class="about-sec__media" data-media>
-        <img
-          src={photoUrl(portrait.gallery, portrait.src, 640)}
-          srcset={photoSrcSet(portrait.gallery, portrait.src)}
+        <Photo
+          slug={portrait.gallery}
+          src={portrait.src}
           sizes="(min-width: 64rem) 36vw, 80vw"
           alt="Ido Yavin standing on a ridge, looking out over snow-covered Austrian peaks"
           width={portrait.width}
           height={portrait.height}
-          loading="lazy"
-          decoding="async"
         />
       </figure>
 

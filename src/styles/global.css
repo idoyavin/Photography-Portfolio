@@ -401,3 +401,9 @@ a {
     transform: none;
   }
 }
+
+/* The <picture> wrapper must not create a box, or every `.parent img`
+   rule would stop matching and layout would shift. */
+picture {
+  display: contents;
+}

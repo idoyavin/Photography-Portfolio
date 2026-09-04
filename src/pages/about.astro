@@ -1,7 +1,7 @@
 ---
 import Base from '../layouts/Base.astro';
 import { SITE } from '../data/site';
-import { photoUrl, photoSrcSet } from '../data/galleries';
+import Photo from '../components/Photo.astro';
 
 // A frame with the photographer in it, rather than another landscape.
 const portrait = { gallery: 'austria', src: 'mg-6704' };
@@ -13,15 +13,14 @@ const portrait = { gallery: 'austria', src: 'mg-6704' };
 >
   <div class="shell about">
     <div class="about__media" data-reveal>
-      <img
-        src={photoUrl(portrait.gallery, portrait.src, 640)}
-        srcset={photoSrcSet(portrait.gallery, portrait.src)}
+      <Photo
+        slug={portrait.gallery}
+        src={portrait.src}
         sizes="(min-width: 64rem) 40vw, 90vw"
         alt="Ido Yavin standing on a ridge, looking out over snow-covered Austrian peaks"
-        width="3922"
-        height="5229"
+        width={3922}
+        height={5229}
         loading="eager"
-        decoding="async"
       />
     </div>
 

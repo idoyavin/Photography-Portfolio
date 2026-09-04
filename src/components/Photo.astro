@@ -1,0 +1,51 @@
+---
+/**
+ * A photograph in both generated formats: AVIF first, WebP as the fallback
+ * for Safari older than 16.4. One component so the <picture> boilerplate
+ * isn't repeated at every call site.
+ *
+ * `picture { display: contents }` in global.css keeps the wrapper out of
+ * layout entirely, so existing `.parent img` rules keep matching.
+ */
+import { photoUrl, photoSrcSet } from '../data/galleries';
+
+interface Props {
+  slug: string;
+  src: string;
+  alt: string;
+  width: number;
+  height: number;
+  sizes: string;
+  loading?: 'eager' | 'lazy';
+  fetchpriority?: 'high' | 'low' | 'auto';
+  class?: string;
+}
+
+const {
+  slug,
+  src,
+  alt,
+  width,
+  height,
+  sizes,
+  loading = 'lazy',
+  fetchpriority,
+  class: className,
+} = Astro.props;
+---
+
+<picture>
+  <source type="image/avif" srcset={photoSrcSet(slug, src, 'avif')} sizes={sizes} />
+  <img
+    class={className}
+    src={photoUrl(slug, src, 640)}
+    srcset={photoSrcSet(slug, src)}
+    sizes={sizes}
+    alt={alt}
+    width={width}
+    height={height}
+    loading={loading}
+    fetchpriority={fetchpriority}
+    decoding="async"
+  />
+</picture>

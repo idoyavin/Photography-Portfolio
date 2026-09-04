@@ -10,6 +10,8 @@ interface Props {
   ogImage?: string;
   /** Hero pages draw their own full-bleed image behind the header */
   transparentHeader?: boolean;
+  /** LCP image to preload: the browser otherwise finds it late, after CSS. */
+  preload?: { srcset: string; sizes: string };
 }
 
 const {
@@ -17,6 +19,7 @@ const {
   description,
   ogImage = '/media/tour-du-mont-blanc/img-5959-1280.webp',
   transparentHeader = false,
+  preload,
 } = Astro.props;
 
 const fullTitle = title === 'Ido Yavin' ? title : `${title} — Ido Yavin`;
@@ -38,6 +41,22 @@ const canonical = new URL(Astro.url.pathname, Astro.site);
     <meta property="og:image" content={new URL(ogImage, Astro.site)} />
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="theme-color" content="#f7f7f6" />
+
+    {/* Preloading the largest-contentful image starts it fetching in the
+        head instead of after the stylesheet resolves. Exactly one format:
+        preloading both would download the image twice, and it must match
+        what the element actually requests or the fetch is simply wasted. */}
+    {
+      preload && (
+        <link
+          rel="preload"
+          as="image"
+          type="image/webp"
+          imagesrcset={preload.srcset}
+          imagesizes={preload.sizes}
+        />
+      )
+    }
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
 
     <link rel="preconnect" href="https://fonts.googleapis.com" />

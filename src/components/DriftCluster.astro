@@ -10,6 +10,7 @@
  * figure's transform is left entirely to the parallax tween.
  */
 import type { Gallery } from '../data/galleries';
+import Photo from './Photo.astro';
 import { photoUrl, photoSrcSet } from '../data/galleries';
 import type { ChapterStory } from '../data/story';
 
@@ -43,15 +44,13 @@ const frames = story.drift
             data-height={frame.photo!.height}
             data-alt={`${gallery.title} — ${frame.caption}`}
           >
-            <img
-              src={photoUrl(gallery.slug, frame.src, 640)}
+            <Photo
+              slug={gallery.slug}
+              src={frame.src}
               sizes="(min-width: 64rem) 28vw, 46vw"
-              srcset={photoSrcSet(gallery.slug, frame.src)}
               alt={`${gallery.title} — ${frame.caption}`}
               width={frame.photo!.width}
               height={frame.photo!.height}
-              loading="lazy"
-              decoding="async"
             />
           </button>
           <figcaption class="cluster__caption">{frame.caption}</figcaption>

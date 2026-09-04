@@ -1,5 +1,6 @@
 ---
 import type { Gallery } from '../data/galleries';
+import Photo from './Photo.astro';
 import { photoUrl, photoSrcSet } from '../data/galleries';
 
 interface Props {
@@ -39,15 +40,14 @@ const total = gallery.photos.length;
             data-height={photo.height}
             data-alt={`${gallery.title} — photograph ${index + 1} of ${total}`}
           >
-            <img
-              src={photoUrl(gallery.slug, photo.src, 640)}
-              srcset={photoSrcSet(gallery.slug, photo.src)}
+            <Photo
+              slug={gallery.slug}
+              src={photo.src}
               sizes="(min-width: 64rem) 34vw, (min-width: 40rem) 48vw, 92vw"
               alt={`${gallery.title} — photograph ${index + 1} of ${total}`}
               width={photo.width}
               height={photo.height}
               loading={index < 4 ? 'eager' : 'lazy'}
-              decoding="async"
             />
             <span class="grid__badge meta" aria-hidden="true">
               {String(index + 1).padStart(2, '0')}

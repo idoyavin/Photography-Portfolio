@@ -8,7 +8,8 @@
  * totals. A photograph, a place, a year, one line.
  */
 import type { Gallery } from '../data/galleries';
-import { photoUrl, photoSrcSet } from '../data/galleries';
+import Photo from './Photo.astro';
+
 import type { ChapterStory } from '../data/story';
 
 interface Props {
@@ -25,15 +26,14 @@ const href = `/work/${gallery.slug}/`;
 <section class="chapter" data-chapter aria-labelledby={`chapter-${gallery.slug}`}>
   <div class="chapter__stage" data-stage>
     <figure class="chapter__media" data-media>
-      <img
-        src={photoUrl(gallery.slug, gallery.cover!, 1280)}
-        srcset={photoSrcSet(gallery.slug, gallery.cover!)}
+      <Photo
+        slug={gallery.slug}
+        src={gallery.cover!}
         sizes="100vw"
         alt=""
-        width={cover?.width}
-        height={cover?.height}
+        width={cover?.width ?? 0}
+        height={cover?.height ?? 0}
         loading={index === 0 ? 'eager' : 'lazy'}
-        decoding="async"
       />
       <div class="chapter__scrim" aria-hidden="true"></div>
     </figure>

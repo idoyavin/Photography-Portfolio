@@ -6,7 +6,8 @@ import DriftCluster from '../components/DriftCluster.astro';
 import AboutSection from '../components/AboutSection.astro';
 import ContactSection from '../components/ContactSection.astro';
 import Lightbox from '../components/Lightbox.astro';
-import { galleries, liveGalleries } from '../data/galleries';
+import { galleries, liveGalleries, photoSrcSet } from '../data/galleries';
+import { HERO_SLIDES } from '../data/site';
 import { STORY } from '../data/story';
 
 const soon = galleries.filter((g) => g.comingSoon);
@@ -16,6 +17,11 @@ const soon = galleries.filter((g) => g.comingSoon);
   title="Ido Yavin"
   description="Landscape and outdoor photography by Ido Yavin — Austria, the Tour du Mont Blanc, Italy and Israel."
   transparentHeader
+  {/* The hero <img> serves WebP, so the preload must too. */}
+  preload={{
+    srcset: photoSrcSet(HERO_SLIDES[0].gallery, HERO_SLIDES[0].src),
+    sizes: '100vw',
+  }}
 >
   <Hero />
 

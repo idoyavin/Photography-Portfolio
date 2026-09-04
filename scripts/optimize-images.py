@@ -23,7 +23,10 @@ from PIL import Image, ImageOps
 # Widths generated for every photograph. The grid uses the small ones,
 # the lightbox and hero use the large ones.
 WIDTHS = [640, 1280, 2000]
-QUALITY = 80
+# Per-format quality. The scales are NOT comparable: AVIF at 80 came out 53%
+# LARGER than WebP at 80. Measured on sample frames, AVIF 55 lands ~36% under
+# WebP 80 at matching fidelity, which is the point of shipping it at all.
+FORMATS = {"webp": ("WEBP", 80), "avif": ("AVIF", 55)}
 
 ROOT = Path(__file__).resolve().parent.parent
 SOURCE_DIR = ROOT / "Media"
@@ -52,15 +55,21 @@ def process_image(source: Path, out_dir: Path) -> dict | None:
         full_w, full_h = img.size
 
         for width in WIDTHS:
-            target = out_dir / f"{stem}-{width}.webp"
-            if target.exists() and not FORCE:
+            pending = {
+                ext: out_dir / f"{stem}-{width}.{ext}"
+                for ext in FORMATS
+                if FORCE or not (out_dir / f"{stem}-{width}.{ext}").exists()
+            }
+            if not pending:
                 continue
 
             # Never upscale past the original.
             w = min(width, full_w)
             h = round(full_h * (w / full_w))
             resized = img.resize((w, h), Image.LANCZOS)
-            resized.save(target, "WEBP", quality=QUALITY, method=6)
+            for ext, target in pending.items():
+                fmt, quality = FORMATS[ext]
+                resized.save(target, fmt, quality=quality)
 
     return {"src": stem, "width": full_w, "height": full_h}
 
