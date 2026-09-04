@@ -5,8 +5,10 @@ dist/
 # dependencies
 node_modules/
 
-# generated image derivatives — rebuild with `npm run images`
-public/media/
+# NOTE: public/media is deliberately NOT ignored. Netlify builds with
+# `npm run build` only — it has no Python or Pillow — so the generated
+# derivatives must be committed or CI deploys ship a site with no photos.
+# Regenerate locally with `npm run images` after adding originals.
 
 # os / editor
 .DS_Store

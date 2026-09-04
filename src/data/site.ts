@@ -33,9 +33,8 @@ export const SITE = {
  * Chosen to span all four locations and to hold up with text over them.
  */
 export const HERO_SLIDES = [
-  { gallery: 'tour-du-mont-blanc', src: 'img-5959', alt: 'Layered mountain ridges fading into haze at sunset on the Tour du Mont Blanc' },
-  { gallery: 'italy', src: 'img-8076', alt: 'A jagged Dolomite peak wreathed in low cloud above golden grass' },
   { gallery: 'israel', src: 'img-8722', alt: 'Warm evening light across a desert canyon in Israel' },
+  { gallery: 'italy', src: 'img-8076', alt: 'A jagged Dolomite peak wreathed in low cloud above golden grass' },
   { gallery: 'austria', src: 'mg-6927', alt: 'Snow-covered Austrian peaks under heavy cloud' },
-  { gallery: 'tour-du-mont-blanc', src: 'img-5961', alt: 'A golden, hazy alpine valley seen from high on the trail' },
+  { gallery: 'tour-du-mont-blanc', src: 'img-5959', alt: 'Layered mountain ridges fading into haze at sunset on the Tour du Mont Blanc' },
 ] as const;

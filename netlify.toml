@@ -1,0 +1,26 @@
+# Continuous deployment from GitHub.
+#
+# The generated WebP/AVIF derivatives in public/media are committed to the
+# repo on purpose: they are produced by scripts/optimize-images.py, which
+# needs Python and Pillow. Netlify's build image only runs `npm run build`,
+# so if the derivatives were gitignored every CI deploy would ship a site
+# with no photographs.
+
+[build]
+  command = "npm run build"
+  publish = "dist"
+
+[build.environment]
+  NODE_VERSION = "24"
+
+# Astro emits 404.html; Netlify serves it automatically for unmatched paths.
+[[headers]]
+  for = "/media/*"
+  [headers.values]
+    # Derivatives are content-addressed by filename, so they can be cached hard.
+    Cache-Control = "public, max-age=31536000, immutable"
+
+[[headers]]
+  for = "/_astro/*"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
