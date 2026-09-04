@@ -17,5 +17,9 @@
   },
   "devDependencies": {
     "@dietrichgebert/ponytail": "^4.9.0"
+  },
+  "overrides": {
+    "sharp": "^0.35.0",
+    "esbuild": "^0.28.1"
   }
 }

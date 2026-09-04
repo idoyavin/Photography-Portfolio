@@ -24,3 +24,33 @@
   for = "/_astro/*"
   [headers.values]
     Cache-Control = "public, max-age=31536000, immutable"
+
+# ---------------------------------------------------------------------------
+# Security headers.
+#
+# This is a static site with no server, no auth, no database and no
+# user-generated content, so these are defence in depth rather than patches
+# for a known hole. They cost nothing and close off whole categories.
+# ---------------------------------------------------------------------------
+[[headers]]
+  for = "/*"
+  [headers.values]
+    # Clickjacking. frame-ancestors in the CSP is the modern control;
+    # X-Frame-Options covers browsers that predate it.
+    X-Frame-Options = "DENY"
+
+    # Stop the browser second-guessing declared Content-Types.
+    X-Content-Type-Options = "nosniff"
+
+    # Don't hand the full URL to third parties (Google Fonts, Formspree).
+    Referrer-Policy = "strict-origin-when-cross-origin"
+
+    # Nothing here needs any of these devices.
+    Permissions-Policy = "camera=(), microphone=(), geolocation=(), payment=(), usb=()"
+
+    # script-src keeps 'unsafe-inline' deliberately: Astro inlines small
+    # component scripts and their hashes change on every build, so pinning
+    # them here would break the next deploy. Every other directive is tight,
+    # and there is no injection vector to exploit — no set:html anywhere, no
+    # user input rendered, nothing reflected from the query string.
+    Content-Security-Policy = "default-src 'self'; base-uri 'self'; object-src 'none'; frame-ancestors 'none'; img-src 'self' data:; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; connect-src 'self' https://formspree.io; form-action 'self' https://formspree.io; upgrade-insecure-requests"

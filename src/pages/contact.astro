@@ -369,7 +369,7 @@ const endpoint = SITE.formspreeId
         status.textContent = 'Thanks — your message is on its way. I’ll reply soon.';
       } catch {
         status.dataset.state = 'error';
-        status.innerHTML =
+        status.textContent =
           'Something went wrong sending that. Please email me directly instead.';
       } finally {
         submit.disabled = false;
